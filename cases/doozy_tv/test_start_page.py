@@ -1,12 +1,14 @@
 # -*- coding:utf8 -*-
- 
+
 from base.app_ui.app_ui_android_demoProject_client import APP_UI_Android_demoProject_Client
-from page_objects.app_ui.android.demoProject.pages.startPage import StartPage
+from page_objects.app_ui.pages.startPage import StartPage
 import pytest
+
+
 class TestStartPage:
     def setup_class(self):
         self.demoProjectClient = APP_UI_Android_demoProject_Client(is_need_kill_app=True)
-        self.startPage=StartPage(self.demoProjectClient.appOperator)
+        self.startPage = StartPage(self.demoProjectClient.appOperator)
 
     @pytest.fixture(autouse=True)
     def record_test_case_video(self):
@@ -20,7 +22,7 @@ class TestStartPage:
         yield self.fixture_test_click_start_btn
         print('end......')
 
-    def test_click_start_btn(self,fixture_test_click_start_btn):
+    def test_click_start_btn(self, fixture_test_click_start_btn):
         self.startPage.click_start()
 
     def test_search_chinese(self):

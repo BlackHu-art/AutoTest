@@ -1,6 +1,7 @@
-#-*- coding:utf8 -*-
- 
+# -*- coding:utf8 -*-
+
 from init.app_ui.android.demoProject.demoProjectInit import DemoProjectInit
+
 
 def android_init():
     """

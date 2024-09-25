@@ -1,4 +1,3 @@
- 
 class Wait_Type:
     TITLE_IS = 'title_is'
     TITLE_CONTAINS = 'title_contains'

@@ -1,6 +1,6 @@
-
 from base.read_httpserver_config import Read_Http_Server_Config
 import os
+
 
 class APP_UI_Devices_Info:
     def __init__(self):
@@ -82,17 +82,17 @@ class APP_UI_Devices_Info:
                 if len(self.chromeDriverPorts):
                     desired_capabilities.update({'chromedriverPort': self.chromeDriverPorts[i].strip()})
                 if len(self.chromeDriverPaths):
-                    desired_capabilities.update({'chromedriverExecutable':self.chromeDriverPaths[i].strip()})
+                    desired_capabilities.update({'chromedriverExecutable': self.chromeDriverPaths[i].strip()})
                 if len(self.recreateChromeDriverSessions):
-                    recreateChromeDriverSessions_value=False
+                    recreateChromeDriverSessions_value = False
                     if 'true' == self.recreateChromeDriverSessions[i].strip().lower():
-                        recreateChromeDriverSessions_value=True
-                    desired_capabilities.update({'recreateChromeDriverSessions':recreateChromeDriverSessions_value})
+                        recreateChromeDriverSessions_value = True
+                    desired_capabilities.update({'recreateChromeDriverSessions': recreateChromeDriverSessions_value})
                 if len(self.nativeWebScreenshots):
-                    nativeWebScreenshot=False
+                    nativeWebScreenshot = False
                     if 'true' == self.nativeWebScreenshots[i].strip().lower():
-                        nativeWebScreenshot=True
-                    desired_capabilities.update({'nativeWebScreenshot':nativeWebScreenshot})
+                        nativeWebScreenshot = True
+                    desired_capabilities.update({'nativeWebScreenshot': nativeWebScreenshot})
                 desired_capabilities.update({'systemport': self.systemports[i].strip()})
                 if len(self.wdaLocalPorts):
                     desired_capabilities.update({'wdaLocalPort': self.wdaLocalPorts[i].strip()})

@@ -1,5 +1,5 @@
-#-*- coding:utf-8 -*-
- 
+# -*- coding:utf-8 -*-
+
 class IndexPageElements:
     def __init__(self):
         pass

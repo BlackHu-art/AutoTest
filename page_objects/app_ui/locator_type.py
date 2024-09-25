@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
- 
+
 class Locator_Type:
     ID = "id"
     XPATH = "xpath"

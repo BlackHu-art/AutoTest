@@ -1,5 +1,4 @@
-# @Author  : yanchunhuo
-# @Time    : 2020/7/23 17:13
+
 
 class Report_Config:
     def __init__(self):
