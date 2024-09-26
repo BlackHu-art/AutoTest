@@ -26,7 +26,7 @@ class APP_UI_Android_demoProject_Client(object):
             self.config = Read_APP_UI_Config().app_ui_config
             self.device_info = FileTool.readJsonFromFile('config/app_ui_tmp/' + str(os.getppid()))
             self.demoProject_config = APP_UI_Android_DemoProject_Read_Config(
-                'config/demoProject/%s' % self.device_info['app_ui_config']).config
+                'config/doozyTv/%s' % self.device_info['app_ui_config']).config
             self.current_desired_capabilities = FileTool.readJsonFromFile(
                 'config/app_ui_tmp/' + str(os.getppid()) + '_current_desired_capabilities')
             self.fullReset = self.current_desired_capabilities['fullReset']

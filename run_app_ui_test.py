@@ -153,10 +153,10 @@ if __name__ == '__main__':
         p_pool.join()
     else:
         # 执行pytest前的参数准备
-        pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/app_ui/windows/report_data/']
+        pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/report_data/']
         # 判断目录参数
         if not dir:
-            dir = 'cases/app_ui/'
+            dir = 'cases/'
         # 判断关键字参数
         if keyword:
             pytest_execute_params.append('-k')
