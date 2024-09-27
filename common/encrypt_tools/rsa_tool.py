@@ -1,19 +1,21 @@
-#
-# rsa_tool.py
-# @author yanchunhuo
-# @description 
-# @created 2022-03-04T14:25:11.785Z+08:00
-# @last-modified 2022-03-04T17:08:23.332Z+08:00
-#
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/9/27 15:15
+"""
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 import base64
 
+
 class RSA_Tool:
     def __init__(self) -> None:
         pass
-    
-    def rsa_encrypt(self,public_key,text:str,hashAlgo=None):
+
+    def rsa_encrypt(self, public_key, text: str, hashAlgo=None):
         """_summary_
 
         Args:
@@ -24,15 +26,15 @@ class RSA_Tool:
         Returns:
             _type_: _description_
         """
-        text=bytes(text,'utf-8')
+        text = bytes(text, 'utf-8')
         # 读取公钥
-        public_key=RSA.import_key(bytes(public_key,'utf-8'))
+        public_key = RSA.import_key(bytes(public_key, 'utf-8'))
         # 实例化加密套件
-        cipher=PKCS1_OAEP.new(public_key,hashAlgo)
-        encrypted_text=cipher.encrypt(text)
+        cipher = PKCS1_OAEP.new(public_key, hashAlgo)
+        encrypted_text = cipher.encrypt(text)
         return base64.b64encode(encrypted_text).decode('utf-8')
-    
-    def rsa_decrypt(self,private_key,encrypted_text:str,hashAlgo=None):
+
+    def rsa_decrypt(self, private_key, encrypted_text: str, hashAlgo=None):
         """_summary_
 
         Args:
@@ -43,16 +45,16 @@ class RSA_Tool:
         Returns:
             _type_: _description_
         """
-        encrypted_text=base64.b64decode(encrypted_text)
+        encrypted_text = base64.b64decode(encrypted_text)
         # 读取私钥
-        private_key=RSA.import_key(bytes(private_key,'utf-8'))
+        private_key = RSA.import_key(bytes(private_key, 'utf-8'))
         # 实例化加密套件
-        cipher=PKCS1_OAEP.new(private_key,hashAlgo)
-        text=cipher.decrypt(encrypted_text)
+        cipher = PKCS1_OAEP.new(private_key, hashAlgo)
+        text = cipher.decrypt(encrypted_text)
         return text.decode('utf-8')
-    
-    def generator_key(self,bits:int=2048):
-        key=RSA.generate(bits)
-        private_key=key.export_key()
-        public_key=key.publickey().export_key()
-        return private_key,public_key
+
+    def generator_key(self, bits: int = 2048):
+        key = RSA.generate(bits)
+        private_key = key.export_key()
+        public_key = key.publickey().export_key()
+        return private_key, public_key

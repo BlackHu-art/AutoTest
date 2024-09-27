@@ -1,4 +1,11 @@
-# -*- coding:utf8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/9/27 15:16
+"""
 
 from pojo.httpResponseResult import HttpResponseResult
 from requests.adapters import HTTPAdapter

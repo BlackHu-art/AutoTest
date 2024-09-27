@@ -1,10 +1,18 @@
-# -*- coding:utf8 -*-
- 
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/9/27 15:14
+"""
+
 import base64
 import hashlib
 
+
 class BaseEncryptTool:
-    
+
     @classmethod
     def md5Encode(cls, text):
         """
@@ -12,18 +20,18 @@ class BaseEncryptTool:
         :param str:
         :return:
         """
-        m=hashlib.md5()
+        m = hashlib.md5()
         m.update(text.encode('utf-8'))
         return m.hexdigest()
-    
-    @classmethod
-    def base64Encode(cls,text,encoding='utf-8'):
-        return base64.b64encode(bytes(text,encoding=encoding))
 
     @classmethod
-    def base64Decode(cls,base64Text):
+    def base64Encode(cls, text, encoding='utf-8'):
+        return base64.b64encode(bytes(text, encoding=encoding))
+
+    @classmethod
+    def base64Decode(cls, base64Text):
         return base64.b64decode(base64Text)
-    
+
     @classmethod
     def hash_code(cls, text: str):
         h = 0
@@ -33,7 +41,7 @@ class BaseEncryptTool:
             return h
         else:
             return 0
-    
+
     @classmethod
     def sha1Encode(cls, src_str):
         """

@@ -57,7 +57,7 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
         print('%s当前设备开始测试的desired_capabilities为:%s' % (DateTimeTool.getNowTime(), desired_capabilities))
         # 执行pytest前的参数准备
         pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/app_ui/%s/%s/report_data/' % (
-        device_info['device_desc'], desired_capabilities_desc)]
+            device_info['device_desc'], desired_capabilities_desc)]
         # 判断目录参数
         if not dir:
             dir = 'cases/app_ui/'
@@ -109,84 +109,52 @@ if __name__ == '__main__':
     parser.add_argument('-clr', '--clr', help='是否清空已有测试结果,1:是、0:否,默认为0', type=str)
     args = parser.parse_args()
 
-    if not args.test_type:
-        sys.exit('请指定测试类型,查看帮助:python run_app_ui_test.py --help')
+    try:
+        if not args.test_type:
+            raise ValueError('请指定测试类型,查看帮助:python run_app_ui_test.py --help')
 
-    # 处理pytest文件
-    deal_pytest_ini_file()
+        # 处理pytest文件
+        deal_pytest_ini_file()
 
-    # 初始化java依赖的libs
-    java_maven_init()
+        # 初始化java依赖的libs
+        java_maven_init()
 
-    # 初始化httpserver
-    http_server_init()
+        # 初始化httpserver
+        http_server_init()
 
-    # 初始化mitmproxy
-    mitmproxy_init()
+        # 初始化mitmproxy
+        mitmproxy_init()
 
-    keyword = args.keyword
-    dir = args.dir
-    markexpr = args.markexpr
-    capture = args.capture
-    reruns = args.reruns
-    lf = args.lf
-    clr = args.clr
-    test_type = args.test_type.lower()
-    devices_info_file = args.devices_info_file
-    if test_type == 'phone':
-        if not devices_info_file:
-            sys.exit('请指定多设备并行信息文件,查看帮助:python run_app_ui_test.py --help')
-        print('%s开始初始化进程......' % DateTimeTool.getNowTime())
-        p_pool = Custom_Pool(int(Read_APP_UI_Config().app_ui_config.max_device_pool))
-        devices_info = Read_APP_UI_Devices_Info(devices_info_file).devices_info
-        print('%s当前使用的配置文件为:%s' % (DateTimeTool.getNowTime(), devices_info_file))
-        print('%s当前设备信息为:%s' % (DateTimeTool.getNowTime(), devices_info))
-        if os.path.exists('config/app_ui_tmp'):
-            FileTool.truncateDir('config/app_ui_tmp/')
+        keyword = args.keyword
+        dir = args.dir
+        markexpr = args.markexpr
+        capture = args.capture
+        reruns = args.reruns
+        lf = args.lf
+        clr = args.clr
+        test_type = args.test_type.lower()
+        devices_info_file = args.devices_info_file
+        if test_type == 'phone':
+            if not devices_info_file:
+                raise ValueError('请指定多设备并行信息文件,查看帮助:python run_app_ui_test.py --help')
+            print(f'{DateTimeTool.getNowTime()} 开始初始化进程......')
+            p_pool = Custom_Pool(int(Read_APP_UI_Config().app_ui_config.max_device_pool))
+            devices_info = Read_APP_UI_Devices_Info(devices_info_file).devices_info
+            print(f'{DateTimeTool.getNowTime()} 当前使用的配置文件为:{devices_info_file}')
+            print(f'{DateTimeTool.getNowTime()} 当前设备信息为:{devices_info}')
+            if os.path.exists('config/app_ui_tmp'):
+                FileTool.truncateDir('config/app_ui_tmp/')
+            else:
+                os.makedirs('config/app_ui_tmp')
+            for i in range(len(devices_info)):
+                device_info = devices_info[i]
+                FileTool.writeObjectIntoFile(device_info, f'config/app_ui_tmp/{i}')
+                p = p_pool.apply_async(start_app_device_test,
+                                       (i, device_info, keyword, dir, markexpr, capture, reruns, lf, clr))
+            p_pool.close()
+            p_pool.join()
         else:
-            os.mkdir('config/app_ui_tmp')
-        for i in range(len(devices_info)):
-            device_info = devices_info[i]
-            FileTool.writeObjectIntoFile(device_info, 'config/app_ui_tmp/' + str(i))
-            p = p_pool.apply_async(start_app_device_test,
-                                   (i, device_info, keyword, dir, markexpr, capture, reruns, lf, clr))
-        p_pool.close()
-        p_pool.join()
-    else:
-        sys.exit()
-        # # 执行pytest前的参数准备
-        # pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/report_data/']
-        # # 判断目录参数
-        # if not dir:
-        #     dir = 'cases/'
-        # # 判断关键字参数
-        # if keyword:
-        #     pytest_execute_params.append('-k')
-        #     pytest_execute_params.append(keyword)
-        # # 判断markexpr参数
-        # if args.markexpr:
-        #     pytest_execute_params.append('-m')
-        #     pytest_execute_params.append(args.markexpr)
-        # # 判断是否输出日志
-        # if capture:
-        #     if int(capture):
-        #         pytest_execute_params.append('-s')
-        # # 判断是否失败重跑
-        # if reruns:
-        #     if int(args.reruns):
-        #         pytest_execute_params.append('--reruns')
-        #         pytest_execute_params.append(reruns)
-        # # 判断是否只运行上一次失败的用例
-        # if lf:
-        #     if int(lf):
-        #         pytest_execute_params.append('--lf')
-        # # 判断是否清空已有测试结果
-        # if clr:
-        #     if int(clr):
-        #         pytest_execute_params.append('--clean-alluredir')
-        # pytest_execute_params.append(dir)
-        # exit_code = pytest.main(pytest_execute_params)
-
-    # 当Python线程中执行jpype相关代码时会出现无法关闭jvm卡死的情况，故不进行主动关闭jvm，Python主进程结束自动关闭
-    # print '关闭jvm......'
-    # jpype.shutdownJVM()
+            sys.exit()
+    except Exception as e:
+        print(f'发生错误: {e}')
+        sys.exit(1)
