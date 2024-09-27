@@ -140,6 +140,7 @@ if __name__ == '__main__':
         p_pool = Custom_Pool(int(Read_APP_UI_Config().app_ui_config.max_device_pool))
         devices_info = Read_APP_UI_Devices_Info(devices_info_file).devices_info
         print('%s当前使用的配置文件为:%s' % (DateTimeTool.getNowTime(), devices_info_file))
+        print('%s当前设备信息为:%s' % (DateTimeTool.getNowTime(), devices_info))
         if os.path.exists('config/app_ui_tmp'):
             FileTool.truncateDir('config/app_ui_tmp/')
         else:
@@ -152,38 +153,39 @@ if __name__ == '__main__':
         p_pool.close()
         p_pool.join()
     else:
-        # 执行pytest前的参数准备
-        pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/report_data/']
-        # 判断目录参数
-        if not dir:
-            dir = 'cases/'
-        # 判断关键字参数
-        if keyword:
-            pytest_execute_params.append('-k')
-            pytest_execute_params.append(keyword)
-        # 判断markexpr参数
-        if args.markexpr:
-            pytest_execute_params.append('-m')
-            pytest_execute_params.append(args.markexpr)
-        # 判断是否输出日志
-        if capture:
-            if int(capture):
-                pytest_execute_params.append('-s')
-        # 判断是否失败重跑
-        if reruns:
-            if int(args.reruns):
-                pytest_execute_params.append('--reruns')
-                pytest_execute_params.append(reruns)
-        # 判断是否只运行上一次失败的用例
-        if lf:
-            if int(lf):
-                pytest_execute_params.append('--lf')
-        # 判断是否清空已有测试结果
-        if clr:
-            if int(clr):
-                pytest_execute_params.append('--clean-alluredir')
-        pytest_execute_params.append(dir)
-        exit_code = pytest.main(pytest_execute_params)
+        sys.exit()
+        # # 执行pytest前的参数准备
+        # pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/report_data/']
+        # # 判断目录参数
+        # if not dir:
+        #     dir = 'cases/'
+        # # 判断关键字参数
+        # if keyword:
+        #     pytest_execute_params.append('-k')
+        #     pytest_execute_params.append(keyword)
+        # # 判断markexpr参数
+        # if args.markexpr:
+        #     pytest_execute_params.append('-m')
+        #     pytest_execute_params.append(args.markexpr)
+        # # 判断是否输出日志
+        # if capture:
+        #     if int(capture):
+        #         pytest_execute_params.append('-s')
+        # # 判断是否失败重跑
+        # if reruns:
+        #     if int(args.reruns):
+        #         pytest_execute_params.append('--reruns')
+        #         pytest_execute_params.append(reruns)
+        # # 判断是否只运行上一次失败的用例
+        # if lf:
+        #     if int(lf):
+        #         pytest_execute_params.append('--lf')
+        # # 判断是否清空已有测试结果
+        # if clr:
+        #     if int(clr):
+        #         pytest_execute_params.append('--clean-alluredir')
+        # pytest_execute_params.append(dir)
+        # exit_code = pytest.main(pytest_execute_params)
 
     # 当Python线程中执行jpype相关代码时会出现无法关闭jvm卡死的情况，故不进行主动关闭jvm，Python主进程结束自动关闭
     # print '关闭jvm......'

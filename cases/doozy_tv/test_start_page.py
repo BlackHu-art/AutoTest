@@ -1,13 +1,13 @@
 # -*- coding:utf8 -*-
 
-from base.app_ui.app_ui_android_demoProject_client import APP_UI_Android_demoProject_Client
+from base.app_ui.android_Project_client import Android_Project_Client
 from page_objects.app_ui.pages.startPage import StartPage
 import pytest
 
 
 class TestStartPage:
     def setup_class(self):
-        self.demoProjectClient = APP_UI_Android_demoProject_Client(is_need_kill_app=True)
+        self.demoProjectClient = Android_Project_Client(is_need_kill_app=True)
         self.startPage = StartPage(self.demoProjectClient.appOperator)
 
     @pytest.fixture(autouse=True)

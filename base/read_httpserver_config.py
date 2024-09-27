@@ -1,5 +1,3 @@
-# @Author  : yanchunhuo
-# @Time    : 2020/1/19 14:35
 from common.network import Network
 from pojo.httpserver_config import HttpServer_Config
 import configparser as ConfigParser
@@ -24,9 +22,11 @@ class Read_Http_Server_Config(object):
         configParser.read(configFile, encoding='utf-8')
         httpserver_config = HttpServer_Config()
         httpserver_config.local_ip = configParser.get('baseInfo', 'local_ip').strip()
+        print('local_ip:', httpserver_config.local_ip)
         if not httpserver_config.local_ip:
             httpserver_config.local_ip = Network.get_local_ip()
         httpserver_config.httpserver_port = configParser.get('baseInfo', 'httpserver_port').strip()
         if not httpserver_config.httpserver_port:
             httpserver_config.httpserver_port = str(8000)
         return httpserver_config
+

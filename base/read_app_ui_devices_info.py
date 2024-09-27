@@ -44,14 +44,7 @@ class Read_APP_UI_Devices_Info(object):
         devices_info.automationNames = get_lambda(config.get('devices_info', 'automationNames', fallback=''))
         devices_info.platformVersions = get_lambda(config.get('devices_info', 'platformVersions', fallback=''))
         devices_info.deviceNames = get_lambda(config.get('devices_info', 'deviceNames', fallback=''))
-        devices_info.chromeDriverPorts = get_lambda(config.get('devices_info', 'chromeDriverPorts', fallback=''))
-        devices_info.chromeDriverPaths = get_lambda(config.get('devices_info', 'chromeDriverPaths', fallback=''))
-        devices_info.recreateChromeDriverSessions = get_lambda(
-            config.get('devices_info', 'recreateChromeDriverSessions', fallback=''))
-        devices_info.nativeWebScreenshots = get_lambda(config.get('devices_info', 'nativeWebScreenshots', fallback=''))
         devices_info.systemports = get_lambda(config.get('devices_info', 'systemports', fallback=''))
-        devices_info.wdaLocalPorts = get_lambda(config.get('devices_info', 'wdaLocalPorts', fallback=''))
-        devices_info.wdaLocalPorts = get_lambda(config.get('devices_info', 'wdaLocalPorts', fallback=''))
         devices_info.appActivitys = get_lambda(config.get('devices_info', 'appActivitys', fallback=''))
         devices_info.appPackages = get_lambda(config.get('devices_info', 'appPackages', fallback=''))
         devices_info.bundleIds = get_lambda(config.get('devices_info', 'bundleIds', fallback=''))
@@ -61,3 +54,4 @@ class Read_APP_UI_Devices_Info(object):
         devices_info.fullResets = get_lambda(config.get('devices_info', 'fullResets', fallback=''))
         devices_info.noResets = get_lambda(config.get('devices_info', 'noResets', fallback=''))
         return devices_info.get_devices_info()
+

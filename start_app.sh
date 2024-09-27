@@ -3,7 +3,7 @@
 
 #app ui 测试
 #cd AutomationTest/
-python -u run_app_ui_test.py -tt phone -k test_ -dif config/doozyTv/devices_conf_info_b11.conf
+python -u run_app_ui_test.py -tt phone -k test_ -dif config/doozy_tv/devices_conf_info_tv.conf
 
 
 

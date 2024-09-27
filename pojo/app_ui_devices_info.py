@@ -79,23 +79,23 @@ class APP_UI_Devices_Info:
                 desired_capabilities.update({'platformVersion': self.platformVersions[i].strip()})
                 if len(self.deviceNames):
                     desired_capabilities.update({'deviceName': self.deviceNames[i].strip()})
-                if len(self.chromeDriverPorts):
-                    desired_capabilities.update({'chromedriverPort': self.chromeDriverPorts[i].strip()})
-                if len(self.chromeDriverPaths):
-                    desired_capabilities.update({'chromedriverExecutable': self.chromeDriverPaths[i].strip()})
-                if len(self.recreateChromeDriverSessions):
-                    recreateChromeDriverSessions_value = False
-                    if 'true' == self.recreateChromeDriverSessions[i].strip().lower():
-                        recreateChromeDriverSessions_value = True
-                    desired_capabilities.update({'recreateChromeDriverSessions': recreateChromeDriverSessions_value})
-                if len(self.nativeWebScreenshots):
-                    nativeWebScreenshot = False
-                    if 'true' == self.nativeWebScreenshots[i].strip().lower():
-                        nativeWebScreenshot = True
-                    desired_capabilities.update({'nativeWebScreenshot': nativeWebScreenshot})
+                # if len(self.chromeDriverPorts):
+                #     desired_capabilities.update({'chromedriverPort': self.chromeDriverPorts[i].strip()})
+                # if len(self.chromeDriverPaths):
+                #     desired_capabilities.update({'chromedriverExecutable': self.chromeDriverPaths[i].strip()})
+                # if len(self.recreateChromeDriverSessions):
+                #     recreateChromeDriverSessions_value = False
+                #     if 'true' == self.recreateChromeDriverSessions[i].strip().lower():
+                #         recreateChromeDriverSessions_value = True
+                #     desired_capabilities.update({'recreateChromeDriverSessions': recreateChromeDriverSessions_value})
+                # if len(self.nativeWebScreenshots):
+                #     nativeWebScreenshot = False
+                #     if 'true' == self.nativeWebScreenshots[i].strip().lower():
+                #         nativeWebScreenshot = True
+                #     desired_capabilities.update({'nativeWebScreenshot': nativeWebScreenshot})
                 desired_capabilities.update({'systemport': self.systemports[i].strip()})
-                if len(self.wdaLocalPorts):
-                    desired_capabilities.update({'wdaLocalPort': self.wdaLocalPorts[i].strip()})
+                # if len(self.wdaLocalPorts):
+                #     desired_capabilities.update({'wdaLocalPort': self.wdaLocalPorts[i].strip()})
                 if len(self.appActivitys) and len(self.appPackages):
                     desired_capabilities.update({'appActivity': a_device_appActivitys[j].strip()})
                     desired_capabilities.update({'appPackage': a_device_appPackages[j].strip()})
@@ -123,3 +123,4 @@ class APP_UI_Devices_Info:
             # 完成一台设备构建
             devices_info.append(device_info)
         return devices_info
+

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from base.app_ui.app_ui_android_demoProject_read_config import APP_UI_Android_DemoProject_Read_Config
+from base.app_ui.android_Project_read_config import APP_UI_Android_DemoProject_Read_Config
 from appium import webdriver
 from base.read_app_ui_config import Read_APP_UI_Config
 from common.appium.appOperator import AppOperator
@@ -10,7 +10,7 @@ from init.app_ui.android.demoProject.demoProjectInit import DemoProjectInit
 import os
 
 
-class APP_UI_Android_demoProject_Client(object):
+class Android_Project_Client(object):
     __instance = None
     __inited = None
 
@@ -26,7 +26,7 @@ class APP_UI_Android_demoProject_Client(object):
             self.config = Read_APP_UI_Config().app_ui_config
             self.device_info = FileTool.readJsonFromFile('config/app_ui_tmp/' + str(os.getppid()))
             self.demoProject_config = APP_UI_Android_DemoProject_Read_Config(
-                'config/doozyTv/%s' % self.device_info['app_ui_config']).config
+                'config/doozy_tv/%s' % self.device_info['app_ui_config']).config
             self.current_desired_capabilities = FileTool.readJsonFromFile(
                 'config/app_ui_tmp/' + str(os.getppid()) + '_current_desired_capabilities')
             self.fullReset = self.current_desired_capabilities['fullReset']

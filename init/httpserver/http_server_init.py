@@ -20,17 +20,18 @@ def http_server_init():
     if "windows" == platform.system().lower():
         get_httpserver_process_id_command = 'netstat -ano|findstr "0.0.0.0:%s"' % port
         try:
-            httpserver_process_id = subprocess.check_output(get_httpserver_process_id_command, shell=True)
+            httpserver_process_id = subprocess.check_output(get_httpserver_process_id_command, shell=True,
+                                                            creationflags=subprocess.CREATE_NO_WINDOW)
             httpserver_process_id = httpserver_process_id.decode('utf-8')
             httpserver_process_id = StrTool.getStringWithLBRB(httpserver_process_id, 'LISTENING', '\r\n').strip()
             kill_httpserver_process_command = 'taskkill /F /pid %s' % httpserver_process_id
             try:
                 print('%s关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % (
-                DateTimeTool.getNowTime(), httpserver_process_id, port))
+                    DateTimeTool.getNowTime(), httpserver_process_id, port))
                 subprocess.check_call(kill_httpserver_process_command, shell=True)
             except:
                 print('%s关闭http.server进程失败,进程id:%s,该进程监听已监听端口:%s' % (
-                DateTimeTool.getNowTime(), httpserver_process_id, port))
+                    DateTimeTool.getNowTime(), httpserver_process_id, port))
         except:
             print('%shttp.server未查找到监听端口%s的服务' % (DateTimeTool.getNowTime(), port))
     elif "linux" == platform.system().lower():
@@ -46,11 +47,11 @@ def http_server_init():
             for httpserver_process_id in httpserver_process_ids:
                 try:
                     print('%s关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % (
-                    DateTimeTool.getNowTime(), httpserver_process_id, port))
+                        DateTimeTool.getNowTime(), httpserver_process_id, port))
                     subprocess.check_output("kill -9 " + httpserver_process_id, shell=True)
                 except:
                     print('%s关闭http.server进程失败,进程id:%s,该进程监听已监听端口:' % (
-                    DateTimeTool.getNowTime(), httpserver_process_id, port))
+                        DateTimeTool.getNowTime(), httpserver_process_id, port))
         except:
             print('%shttp.server未查找到监听端口%s的服务' % (DateTimeTool.getNowTime(), port))
     elif "darwin" == platform.system().lower():
