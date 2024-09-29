@@ -22,11 +22,25 @@ class PathTool(object):
     @staticmethod
     def get_splicing_path(join_path):
         """
-        @Description：从根目录下开始拼接出其他路径
+        从根目录下开始拼接出其他路径
         """
         if not isinstance(join_path, (str, os.PathLike)):
             raise ValueError("join_path 必须是字符串或 PathLike 对象")
-        filepath = os.path.join(path_tool.get_project_path() + join_path)
+
+        project_path = PathTool.get_project_path()
+        if not isinstance(project_path, str):
+            raise TypeError("project_path 必须是字符串")
+
+        try:
+            # 使用 os.path.join 进行路径拼接
+            filepath = os.path.join(project_path, join_path)
+            # 规范化路径
+            filepath = os.path.normpath(filepath)
+            # 确保路径绝对化
+            filepath = os.path.abspath(filepath)
+        except Exception as e:
+            raise ValueError(f"路径拼接失败: {e}")
+
         return filepath
 
     @staticmethod

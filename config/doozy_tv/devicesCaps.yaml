@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-
 desired_caps_poco:
   platformName: Android
   platformVersion: 9
@@ -19,13 +16,13 @@ desired_caps_poco:
   skipDeviceInitialization: True                            # 跳过安装AppiumSetting
 
 
-#desired_caps_mi6:
-#  platformName: Android
-#  platformVersion: 9
-#  deviceName: 4952fcf6
-#  appPackage: com.mm.droid.livetv.tve.esmobile
-#  appActivity: com.mm.mobile.m.home.splash.SplashActivity
-##  app: UIAutoTest/testData/apks/TVELA_mobile_4.1.0beta4_20230907.apk
+desired_caps_mi6:
+  platformName: Android
+  platformVersion: 9
+  deviceName: 4952fcf6
+  appPackage: com.mm.droid.livetv.tve.esmobile
+  appActivity: com.mm.mobile.m.home.splash.SplashActivity
+#  app: UIAutoTest/testData/apks/TVELA_mobile_4.1.0beta4_20230907.apk
 ##  unicodeKeyboard: True                                     # 如果指定了UI2作为驱动，不需要配置；
 ##  resetKeyboard: True                                       # 重置自动化时设置的键盘；
 ##  chromedriverExecutableDir: path                           # 启动webview的webdriver驱动

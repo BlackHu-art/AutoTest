@@ -9,98 +9,135 @@
 
 import os
 import yaml
-from yaml import FullLoader
 
-from logger import logger
+from common.logger.logTool import logger
 from common.pathTool import PathTool
 
 
-class YamlUtil(object):
-    CONFIG_DIR = PathTool.get_config_dir()
+class YamlTool(object):
 
-    def load_yaml_configs(self, filename=None):
+    """
+    YamlEditor类提供了对YAML文件进行增、删、改、查以及处理嵌套键值对的功能。
+    """
+
+    def __init__(self, file_path):
         """
-        加载YAML配置文件。
-
-        :param filename: 要加载的特定文件名
-        :return: 文件中的配置数据
+        初始化方法，加载YAML文件内容。
+        :param file_path: YAML文件的路径
         """
-        if filename is not None:
-            # 验证文件名是否安全
-            if not self.is_safe_filename(filename):
-                raise ValueError("Invalid filename provided.")
+        self.file_path = PathTool.get_splicing_path(file_path)
+        self.data = self.load_yaml()
 
-            file_path = os.path.join(self.CONFIG_DIR, filename)
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    datas = yaml.load(f, Loader=FullLoader)
-                    logger.info(f"成功读取文件 {filename}")
-                    return datas
-            except Exception as e:
-                logger.error(f"读取文件 {filename} 失败: {e}")
-                return None
+    def load_yaml(self):
+        """
+        加载YAML文件并返回内容。
+        :return: 返回YAML文件内容（字典格式）。
+        """
+        if os.path.exists(self.file_path):
+            with open(self.file_path, 'r', encoding='utf-8') as file:
+                return yaml.safe_load(file) or {}  # 返回字典或空字典
+        return {}
 
+    def save_yaml(self):
+        """
+        保存当前内存中的YAML数据到文件。
+        """
+        with open(self.file_path, 'w', encoding='utf-8') as file:
+            yaml.safe_dump(self.data, file, default_flow_style=False, allow_unicode=True)
+
+    def add(self, key, value):
+        """
+        添加或更新YAML文件中的键值对。
+        :param key: 键
+        :param value: 值
+        """
+        self.data[key] = value
+        self.save_yaml()
+
+    def delete(self, key):
+        """
+        删除YAML文件中的键值对。
+        :param key: 要删除的键
+        """
+        if key in self.data:
+            del self.data[key]
+            self.save_yaml()
         else:
-            logger.error(f"读取文件失败，传参filename为空")
-            return
+            logger.error(f"{key} 不存在")
 
-    @staticmethod
-    def is_safe_filename(filename):
+    def update(self, key, value):
         """
-        检查文件名是否安全。
-
-        :param filename: 文件名
-        :return: 是否安全
+        更新YAML文件中的值。
+        :param key: 要更新的键
+        :param value: 新值
         """
-        return not (os.path.sep in filename or os.path.altsep in filename)
+        if key in self.data:
+            self.data[key] = value
+            self.save_yaml()
+        else:
+            logger.error(f"{key} 不存在")
 
-    def clear_data_with_path(self, filename):
+    def get(self, key):
         """
-        清空指定文件的内容。
-
-        :param filename: 文件名
+        获取YAML文件中的值。
+        :param key: 要获取的键
+        :return: 返回对应的值
         """
-        if not self.is_safe_filename(filename):
-            raise ValueError("Invalid filename provided.")
+        return self.data.get(key, None)
 
-        file_path = os.path.join(self.CONFIG_DIR, filename)
-        try:
-            with open(file_path, 'w', encoding='utf-8') as f:
-                f.truncate()
-                logger.info(f"成功清空文件 {filename}")
-        except Exception as e:
-            logger.error(f"清空文件 {filename} 失败: {e}")
-
-    def write_to_yaml(self, data, filename):
+    def display(self):
         """
-        将数据写入YAML文件。
-
-        :param data: 要写入的数据
-        :param filename: 文件名
+        显示当前的YAML文件内容。
         """
-        if not self.is_safe_filename(filename):
-            raise ValueError("Invalid filename provided.")
+        return self.data
 
-        file_path = os.path.join(self.CONFIG_DIR, filename)
-        try:
-            with open(file_path, 'w', encoding='utf-8') as file:
-                yaml.dump(data, file, allow_unicode=True)
-                logger.info(f"成功写入文件 {filename}")
-        except Exception as e:
-            logger.error(f"写入文件 {filename} 失败: {e}")
+    def get_nested_value(self, parent_key, child_key):
+        """
+        获取嵌套键中的值。例如：获取desired_caps_mi6中的platformVersion。
+        :param parent_key: 父键，例如desired_caps_mi6
+        :param child_key: 子键，例如platformVersion
+        :return: 返回子键对应的值
+        """
+        if parent_key in self.data and isinstance(self.data[parent_key], dict):
+            return self.data[parent_key].get(child_key, None)
+        else:
+            logger.error(f"{parent_key} 不存在或者不是字典")
 
-
-# 创建实例并调用示例
-yaml_util = YamlUtil()
+    def update_nested_value(self, parent_key, child_key, new_value):
+        """
+        更新嵌套键中的值。例如：更新desired_caps_mi6中的platformVersion。
+        :param parent_key: 父键，例如desired_caps_mi6
+        :param child_key: 子键，例如platformVersion
+        :param new_value: 新值
+        """
+        if parent_key in self.data and isinstance(self.data[parent_key], dict):
+            self.data[parent_key][child_key] = new_value
+            self.save_yaml()
+        else:
+            logger.error(f"{parent_key} 不存在或者不是字典")
 
 
 # 测试获取yaml配置数据
 if __name__ == '__main__':
-    # 获取特定文件的数据
-    specific_file_data = yaml_util.load_yaml_configs("example.yaml")
-    print(specific_file_data)
+    # 加载YAML文件
+    yaml_editor = YamlTool('config/example.yaml')
 
-    # 获取所有文件的数据
-    all_files_data = yaml_util.load_yaml_configs()
-    print(all_files_data)
+    print(yaml_editor.get("desired_caps_poco"))
+    # 获取 YAML 编辑器的显示结果，并记录日志
+    try:
+        display_result = yaml_editor.display()
+        logger.info(display_result)
+    except Exception as e:
+        logger.error("获取 YAML 显示结果时发生错误: %s", str(e))
+
+    # 获取desired_caps_mi6中的platformVersion值
+    platform_version = yaml_editor.get_nested_value('desired_caps_poco', 'platformVersion')
+    print(platform_version)  # 输出：9
+
+    yaml_editor.update_nested_value('desired_caps_mi6', 'platformVersion', 10)
+
+    # 验证更新是否成功
+    updated_version = yaml_editor.get_nested_value('desired_caps_mi6', 'platformVersion')
+    print(updated_version)  # 输出：10
+
 
