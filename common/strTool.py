@@ -1,10 +1,11 @@
 #!-*- coding:utf8 -*-
- 
+
 import ujson
 import re
 import random
 import string
 import uuid
+
 
 class StrTool:
     letters = list(string.ascii_letters)
@@ -38,7 +39,7 @@ class StrTool:
                 return None
 
     @classmethod
-    def addUUID(cls,prefix:str=None,suffix:str=None,separator:str='_'):
+    def addUUID(cls, prefix: str = None, suffix: str = None, separator: str = '_'):
         """_summary_
 
         Args:
@@ -49,11 +50,11 @@ class StrTool:
         Returns:
             _type_: _description_
         """
-        result=str(uuid.uuid4())
+        result = str(uuid.uuid4())
         if prefix:
-            result=prefix+separator+result
+            result = prefix + separator + result
         if suffix:
-            result=result+separator+suffix
+            result = result + separator + suffix
         return result
 
     @classmethod
@@ -64,7 +65,7 @@ class StrTool:
         :return:
         """
         import json
-        return json.dumps(object,default=lambda o: o.__dict__)
+        return json.dumps(object, default=lambda o: o.__dict__)
 
     @classmethod
     def objectToJson(cls, object):
@@ -74,7 +75,7 @@ class StrTool:
         :return:
         """
         import json
-        return ujson.loads(json.dumps(object,default=lambda o: o.__dict__))
+        return ujson.loads(json.dumps(object, default=lambda o: o.__dict__))
 
     @classmethod
     def getSpecifiedStr(cls, length, char):
@@ -207,7 +208,7 @@ class StrTool:
         return result
 
     @classmethod
-    def contentToDict(cls, content: str,result_enter_type:str='\r\n'):
+    def contentToDict(cls, content: str, result_enter_type: str = '\r\n'):
         """
         将包含换行符的字符串内容转为字典，目前仅支持格式:key=value
         @param content:
@@ -217,20 +218,20 @@ class StrTool:
         content = content.replace('\r\n', '\n')
         lines = content.split('\n')
         result_dict = {}
-        tmp_key_desc=''
-        for i,line in enumerate(lines):
+        tmp_key_desc = ''
+        for i, line in enumerate(lines):
             if not line.startswith('#') and not line.startswith('//') and '=' in line:
                 tmp_line = line.split('=')
-                result_dict.update({tmp_line[0].strip(): {'value':tmp_line[1].strip(),'desc':tmp_key_desc}})
-                tmp_key_desc=''
+                result_dict.update({tmp_line[0].strip(): {'value': tmp_line[1].strip(), 'desc': tmp_key_desc}})
+                tmp_key_desc = ''
             else:
-                tmp_key_desc+=line
-                if not i==len(lines)-1:
-                    tmp_key_desc+=result_enter_type
+                tmp_key_desc += line
+                if not i == len(lines) - 1:
+                    tmp_key_desc += result_enter_type
         return result_dict
 
     @classmethod
-    def dictToContent(cls, content_dict:dict,result_enter_type:str='\r\n'):
+    def dictToContent(cls, content_dict: dict, result_enter_type: str = '\r\n'):
         """
         将def contentToDict(cls, content: str,result_enter_type:str='\r\n')返回的结果拼接为content
         key和value使用=拼接

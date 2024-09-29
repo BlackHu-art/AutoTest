@@ -1,11 +1,13 @@
-#-*- coding:utf8 -*-
- 
+# -*- coding:utf8 -*-
+
 import jpype
 from common.java.javaTools import StartJpypeJVM
+
+
 class CaptchaRecognitionTool:
 
     @classmethod
-    def captchaRecognition(cls,filePath,language='eng'):
+    def captchaRecognition(cls, filePath, language='eng'):
         """
 
         :param filePath: 图片验证码
@@ -17,5 +19,5 @@ class CaptchaRecognitionTool:
         StartJpypeJVM()
         CaptchaRecognition = jpype.JClass('com.ocr.CaptchaRecognition')
         captchaRecognition = CaptchaRecognition('common/java/lib/tess4j/tessdata/')
-        captcha = captchaRecognition.captchaRecognitionWithFile(filePath,language)
+        captcha = captchaRecognition.captchaRecognitionWithFile(filePath, language)
         return captcha

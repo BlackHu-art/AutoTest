@@ -1,0 +1,56 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+desired_caps_poco:
+  platformName: Android
+  platformVersion: 9
+  deviceName: 10.0.0.132:5188
+  appPackage: com.mm.droid.livetv.stb31023418
+  appActivity: com.mm.droid.livetv.load.LiveLoadActivity
+  app: packages/doozy_tv/DoozyTV_2.1.3_20240717_stb.apk
+#  unicodeKeyboard: True                                     # 如果指定了UI2作为驱动，不需要配置；
+#  resetKeyboard: True                                       # 重置自动化时设置的键盘；
+#  chromedriverExecutableDir: path                           # 启动webview的webdriver驱动
+  noReset: True                                             # 防止每次启动app时候都初始化所有数据；
+#  newCommandTimeout: 60                                     # 代码向appiumserver发送命令的延迟时间，单位是秒，不设置默认一分钟；
+  automationName: uiautomator2                              # 这个并不是所有应用都适配的，1.15.1以前默认是UI1，之后是默认UI2；
+  autoGrantPermissions: True                                # 自动跳过授权
+  skipServerInstallation: True
+  skipDeviceInitialization: True                            # 跳过安装AppiumSetting
+
+
+#desired_caps_mi6:
+#  platformName: Android
+#  platformVersion: 9
+#  deviceName: 4952fcf6
+#  appPackage: com.mm.droid.livetv.tve.esmobile
+#  appActivity: com.mm.mobile.m.home.splash.SplashActivity
+##  app: UIAutoTest/testData/apks/TVELA_mobile_4.1.0beta4_20230907.apk
+##  unicodeKeyboard: True                                     # 如果指定了UI2作为驱动，不需要配置；
+##  resetKeyboard: True                                       # 重置自动化时设置的键盘；
+##  chromedriverExecutableDir: path                           # 启动webview的webdriver驱动
+##  noReset: True                                             # 防止每次启动app时候都初始化所有数据；
+##  newCommandTimeout: 6000                                   # 代码向appiumserver发送命令的延迟时间，单位是秒，不设置默认一分钟；
+##  automationName: uiautomator2                              # 这个并不是所有应用都适配的，1.15.1以前默认是UI1，之后是默认UI2；
+#  autoGrantPermissions: True                                # 自动跳过授权
+##  skipServerInstallation: True
+##  skipDeviceInitialization: True                            # 跳过安装AppiumSetting
+#
+#
+#
+#desired_caps_lighting:
+#  platformName: Android
+#  platformVersion: 9
+#  deviceName: emulator-5554
+#  appPackage: com.mm.droid.livetv.tve.esmobile
+#  appActivity: com.mm.mobile.m.home.splash.SplashActivity
+##  app: UIAutoTest/testData/apks/TVELA_mobile_4.1.0beta4_20230907.apk
+##  unicodeKeyboard: True                                     # 如果指定了UI2作为驱动，不需要配置；
+##  resetKeyboard: True                                       # 重置自动化时设置的键盘；
+##  chromedriverExecutableDir: path                           # 启动webview的webdriver驱动
+##  noReset: True                                             # 防止每次启动app时候都初始化所有数据；
+##  newCommandTimeout: 6000                                   # 代码向appiumserver发送命令的延迟时间，单位是秒，不设置默认一分钟；
+##  automationName: uiautomator2                              # 这个并不是所有应用都适配的，1.15.1以前默认是UI1，之后是默认UI2；
+##  autoGrantPermissions: False                                # 自动跳过授权
+##  skipServerInstallation: True
+##  skipDeviceInitialization: True                            # 跳过安装AppiumSetting

@@ -1,15 +1,16 @@
 #!-*- coding:utf8 -*-
- 
+
 import ujson
 import os
 import re
 # requests库依赖会安装charset_normalizer
 from charset_normalizer import detect
 
+
 class FileTool:
 
     @classmethod
-    def getChardet(cls,filePath):
+    def getChardet(cls, filePath):
         """
         获取文件编码格式，比如utf-8、GB2312
         :param filePath:
@@ -21,7 +22,7 @@ class FileTool:
         return cur_encoding
 
     @classmethod
-    def writeObjectIntoFile(cls,obj,filePath,encoding='utf-8'):
+    def writeObjectIntoFile(cls, obj, filePath, encoding='utf-8'):
         """
         将对象转为json字符串，写入到文件
         :param obj:
@@ -29,54 +30,54 @@ class FileTool:
         :return:
         """
         str = ujson.dumps(obj)
-        with open(filePath,'w',encoding=encoding) as f:
+        with open(filePath, 'w', encoding=encoding) as f:
             f.write(str)
             f.close()
 
     @classmethod
-    def readJsonFromFile(cls,filePath,encoding='utf-8'):
+    def readJsonFromFile(cls, filePath, encoding='utf-8'):
         """
         从文件里读取json字符串
         :param filePath:
         :return:
         """
-        with open(filePath,'r',encoding=encoding) as f:
-            result=f.read()
+        with open(filePath, 'r', encoding=encoding) as f:
+            result = f.read()
             f.close()
-        result=ujson.loads(result)
+        result = ujson.loads(result)
         return result
 
     @classmethod
-    def truncateFile(cls,fielPath,encoding='utf-8'):
+    def truncateFile(cls, fielPath, encoding='utf-8'):
         """
         清空文件
         :param fielPath:
         :return:
         """
-        with open(fielPath,'r+',encoding=encoding) as f:
+        with open(fielPath, 'r+', encoding=encoding) as f:
             f.truncate()
             f.close()
 
     @classmethod
-    def truncateDir(cls,dirPath,regexs=None):
+    def truncateDir(cls, dirPath, regexs=None):
         """
         清空整个目录的内容
         :param dirPath:
         :param regexs: 正则匹配的文件名，以数组存放多个正则表达式
         :return:
         """
-        for path,dirs,files in os.walk(dirPath):
+        for path, dirs, files in os.walk(dirPath):
             for file in files:
-                filePath=os.path.join(path,file)
+                filePath = os.path.join(path, file)
                 if regexs:
                     pattern = '|'.join(regexs)
-                    if re.match(pattern,file):
+                    if re.match(pattern, file):
                         os.remove(filePath)
                 else:
                     os.remove(filePath)
 
     @classmethod
-    def replaceFileLineContent(cls, filePath, match_keyword, old, new,encoding='utf-8'):
+    def replaceFileLineContent(cls, filePath, match_keyword, old, new, encoding='utf-8'):
         """
         根据关键字匹配文档中的行，对行内容进行替换
         :param filePath: 文档路径
@@ -85,7 +86,7 @@ class FileTool:
         :param new: 用于替换匹配的行中的旧字符串
         :return:
         """
-        with open(filePath, 'r',encoding=encoding) as f:
+        with open(filePath, 'r', encoding=encoding) as f:
             new_lines = []
             lines = f.readlines()
             for line in lines:
@@ -94,12 +95,12 @@ class FileTool:
                 new_lines.append(line)
             f.close()
 
-            with open(filePath, 'w+',encoding=encoding) as f:
+            with open(filePath, 'w+', encoding=encoding) as f:
                 f.writelines(new_lines)
                 f.close()
 
     @classmethod
-    def replaceFileContent(cls, filePath, old, new, replaceNum=-1, replaceOffset=0,encoding='utf-8'):
+    def replaceFileContent(cls, filePath, old, new, replaceNum=-1, replaceOffset=0, encoding='utf-8'):
         """
         替换文档中的内容,支持替换全部、替换指定前几个、替换第N个
         :param filePath: 文档路径
@@ -109,7 +110,7 @@ class FileTool:
         :param replaceOffset: 替换第几个，下标从0开始，
         :return:
         """
-        with open(filePath, 'r',encoding=encoding) as f:
+        with open(filePath, 'r', encoding=encoding) as f:
             content = f.read()
             if int(replaceNum) == -1:
                 content = content.replace(old, new)
@@ -145,12 +146,12 @@ class FileTool:
                         content = preContent + centerContent + suffContent
                         break
 
-            with open(filePath, 'w+',encoding=encoding) as f:
+            with open(filePath, 'w+', encoding=encoding) as f:
                 f.writelines(content)
                 f.close()
 
     @classmethod
-    def replaceFileContentWithLBRB(cls, filePath, new, lbStr, rbStr, replaceOffset=0,encoding='utf-8'):
+    def replaceFileContentWithLBRB(cls, filePath, new, lbStr, rbStr, replaceOffset=0, encoding='utf-8'):
         """
         根据左右字符串匹配要替换的文档内容，支持多处匹配只替换一处的功能
         :param filePath: 文档路径
@@ -164,7 +165,7 @@ class FileTool:
             return
         regex = '([\\s\\S]*?)'
         r = re.compile(lbStr + regex + rbStr)
-        with open(filePath, 'r',encoding=encoding) as f:
+        with open(filePath, 'r', encoding=encoding) as f:
             content = f.read()
             match_results = r.findall(content)
             if int(replaceOffset) == -1:
@@ -189,12 +190,12 @@ class FileTool:
                         break
             f.close()
 
-            with open(filePath, 'w+',encoding=encoding) as f:
+            with open(filePath, 'w+', encoding=encoding) as f:
                 f.writelines(content)
                 f.close()
 
     @classmethod
-    def appendContent(cls, filePath, content,encoding='utf-8'):
-        with open(filePath, 'a',encoding=encoding) as f:
+    def appendContent(cls, filePath, content, encoding='utf-8'):
+        with open(filePath, 'a', encoding=encoding) as f:
             f.write(content)
             f.close()

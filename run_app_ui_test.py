@@ -141,7 +141,6 @@ if __name__ == '__main__':
             p_pool = Custom_Pool(int(Read_APP_UI_Config().app_ui_config.max_device_pool))
             devices_info = Read_APP_UI_Devices_Info(devices_info_file).devices_info
             print(f'{DateTimeTool.getNowTime()} 当前使用的配置文件为:{devices_info_file}')
-            print(f'{DateTimeTool.getNowTime()} 当前设备信息为:{devices_info}')
             if os.path.exists('config/app_ui_tmp'):
                 FileTool.truncateDir('config/app_ui_tmp/')
             else:

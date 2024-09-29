@@ -1,6 +1,13 @@
-# @Author  : yanchunhuo
-# @Time    : 2020/1/19 14:46
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/9/29 15:02
+"""
 import socket
+
 
 class Network:
     @classmethod
@@ -12,6 +19,6 @@ class Network:
             return host
         except:
             print('通过UDP协议获取IP出错')
-            hostname=socket.gethostname()
-            host=socket.gethostbyname(hostname)
+            hostname = socket.gethostname()
+            host = socket.gethostbyname(hostname)
         return host
