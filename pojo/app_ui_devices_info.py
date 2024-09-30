@@ -12,7 +12,7 @@ class APP_UI_Devices_Info:
         self.server_ips = []
         self.system_auth_alert_labels = []
         self.is_enable_system_auth_check = []
-        self.udids = []
+        # self.udids = []
         self.platformNames = []
         self.automationNames = []
         self.platformVersions = []
@@ -124,9 +124,9 @@ class APP_UI_Devices_Info:
             a_devices_desired_capabilities = []
             for j in range(a_device_capabilities_num):
                 desired_capabilities = {}
-                desired_capabilities.update({'udid': self.udids[i].strip()})
+                # desired_capabilities.update({'udid': self.udids[i].strip()})
                 desired_capabilities.update({'platformName': self.platformNames[i].strip()})
-                logger.info(f"Setting udid and platformName for device {i}: {self.udids[i]}, {self.platformNames[i]}")
+                logger.info(f"Setting udid and platformName for device {i}, platformNames: {self.platformNames[i]}")
 
                 # 如果存在automationNames，则更新
                 if len(self.automationNames):

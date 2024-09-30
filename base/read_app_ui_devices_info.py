@@ -46,7 +46,7 @@ class Read_APP_UI_Devices_Info(object):
 
             devices_info.is_enable_system_auth_check = get_list(
                 config.get('devices_info', 'is_enable_system_auth_check', fallback=''), '||')
-            devices_info.udids = get_list(config.get('devices_info', 'udids', fallback=''), '||')
+            # devices_info.udids = get_list(config.get('devices_info', 'udids', fallback=''), '||')
             devices_info.platformNames = get_list(config.get('devices_info', 'platformNames', fallback=''), '||')
             devices_info.automationNames = get_list(config.get('devices_info', 'automationNames', fallback=''), '||')
             devices_info.platformVersions = get_list(config.get('devices_info', 'platformVersions', fallback=''), '||')
