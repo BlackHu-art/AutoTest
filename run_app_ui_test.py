@@ -10,9 +10,8 @@ from common.pytest import deal_pytest_ini_file
 from init.java.java_maven_init import java_maven_init
 from init.httpserver.http_server_init import http_server_init
 from init.mitmproxy.mitmproxy_init import mitmproxy_init
-from common.logger import logger
+from common.logger.logTool import logger
 import argparse
-import multiprocessing
 import os
 import pytest
 import sys

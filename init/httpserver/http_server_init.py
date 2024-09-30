@@ -1,6 +1,6 @@
 from base.read_httpserver_config import Read_Http_Server_Config
 from common.strTool import StrTool
-from common.logger import logger
+from common.logger.logTool import logger
 import multiprocessing
 import platform
 import subprocess

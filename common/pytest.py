@@ -1,4 +1,4 @@
-from common.logger import logger
+from common.logger.logTool import logger
 import platform
 
 

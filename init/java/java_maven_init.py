@@ -1,5 +1,5 @@
 from common.fileTool import FileTool
-from common.logger import logger
+from common.logger.logTool import logger
 import os
 import subprocess
 import platform

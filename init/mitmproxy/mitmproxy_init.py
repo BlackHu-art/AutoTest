@@ -1,6 +1,6 @@
 from base.read_mitmproxy_config import Read_Mitmproxy_Config
 from common.strTool import StrTool
-from common.logger import logger
+from common.logger.logTool import logger
 import multiprocessing
 import platform
 import subprocess
