@@ -1,4 +1,4 @@
-desired_caps_poco:
+desired_caps_B11:
   platformName: Android
   platformVersion: 9
   deviceName: 10.0.0.132:5188
