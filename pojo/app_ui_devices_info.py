@@ -1,6 +1,6 @@
 from base.read_httpserver_config import Read_Http_Server_Config
 from common.logger.logTool import logger
-import os
+from common.pathTool import path_tool
 
 
 class APP_UI_Devices_Info:
@@ -67,16 +67,16 @@ class APP_UI_Devices_Info:
             # 更新其他设备信息
             device_info.update({'server_port': self.server_ports[i].strip()})
             device_info.update({'server_ip': self.server_ips[i].strip()})
-            logger.info(f"Updating server info for device {i}: {self.server_ports[i]}, {self.server_ips[i]}")
+            logger.info(f"Updating server info for device {i}: {self.devices_desc[i]}，server_ports:{self.server_ports[i]}, server_ips:{self.server_ips[i]}")
 
             # 如果存在系统认证标签，则更新
             if self.system_auth_alert_labels:
                 device_info.update({'system_auth_alert_label': self.system_auth_alert_labels[i]})
-                logger.info(f"Adding system auth alert label for device {i}: {self.system_auth_alert_labels[i]}")
+                logger.info(f"Adding system auth alert label for device {i},system_auth_alert_labels: {self.system_auth_alert_labels[i]}")
 
             # 更新是否启用系统认证检查
             device_info.update({'is_enable_system_auth_check': self.is_enable_system_auth_check[i]})
-            logger.info(f"Enabling system auth check for device {i}: {self.is_enable_system_auth_check[i]}")
+            logger.info(f"Enabling system auth check for device {i}, is_enable_system_auth_check: {self.is_enable_system_auth_check[i]}")
 
             # 构建desired_capabilities
             a_device_capabilities_num = 0
@@ -90,7 +90,7 @@ class APP_UI_Devices_Info:
                 a_device_appActivitys = self.appActivitys[i].split('&&')
                 a_device_appPackages = self.appPackages[i].split('&&')
                 a_device_capabilities_num = len(a_device_appActivitys)
-                logger.info(f"Found appActivity and appPackages for device {i}: {len(a_device_appActivitys)}")
+                logger.info(f"Found for device {i}, device_appPackages: {a_device_appPackages}, device_appActivitys: {a_device_appActivitys}")
 
             # 处理bundleIds
             if len(self.bundleIds):
@@ -101,14 +101,16 @@ class APP_UI_Devices_Info:
             # 处理apps_dirs
             if len(self.apps_dirs):
                 try:
-                    paths = os.walk(self.apps_dirs[i].strip())
-                    for dirPath, dirName, fileNames in paths:
+                    paths = path_tool.get_full_path(self.apps_dirs[i])
+                    logger.info(f"Found apks in dir:" + self.apps_dirs[i])
+                    # 使用 os.walk 生成的 (dirPath, dirNames, fileNames) 解包
+                    for dirPath, dirNames, fileNames in paths:
                         for fileName in fileNames:
                             app_url = f'http://{local_ip}:{httpserver_port}/{self.apps_dirs[i].strip()}/{fileName}'
                             a_device_apps.append(app_url)
                             logger.info(f"Appending app URL: {app_url}")
                     a_device_capabilities_num = len(a_device_apps)
-                    logger.info(f"Found apps in directory for device {i}: {a_device_capabilities_num}")
+                    logger.info(f"Found apps_urls for device {i}: {len(a_device_apps)}")
                 except Exception as e:
                     logger.error(f"Error while processing apps_dirs: {e}")
 
@@ -187,19 +189,3 @@ class APP_UI_Devices_Info:
         # 返回设备信息列表
         logger.info(f"All devices processed: {devices_info}")
         return devices_info
-        # if len(self.chromeDriverPorts):
-        #     desired_capabilities.update({'chromedriverPort': self.chromeDriverPorts[i].strip()})
-        # if len(self.chromeDriverPaths):
-        #     desired_capabilities.update({'chromedriverExecutable': self.chromeDriverPaths[i].strip()})
-        # if len(self.recreateChromeDriverSessions):
-        #     recreateChromeDriverSessions_value = False
-        #     if 'true' == self.recreateChromeDriverSessions[i].strip().lower():
-        #         recreateChromeDriverSessions_value = True
-        #     desired_capabilities.update({'recreateChromeDriverSessions': recreateChromeDriverSessions_value})
-        # if len(self.nativeWebScreenshots):
-        #     nativeWebScreenshot = False
-        #     if 'true' == self.nativeWebScreenshots[i].strip().lower():
-        #         nativeWebScreenshot = True
-        #     desired_capabilities.update({'nativeWebScreenshot': nativeWebScreenshot})
-        # if len(self.wdaLocalPorts):
-        #     desired_capabilities.update({'wdaLocalPort': self.wdaLocalPorts[i].strip()})

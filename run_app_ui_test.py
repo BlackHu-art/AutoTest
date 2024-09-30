@@ -53,7 +53,6 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
 
     a_devices_desired_capabilities = device_info['capabilities']
     logger.info(f'开始设备{device_info["device_desc"]}测试......')
-    logger.info(f'当前设备所需测试的desired_capabilities为: {a_devices_desired_capabilities}')
 
     for desired_capabilities in a_devices_desired_capabilities:
         # 将当前 Desired Capabilities 写入文件
