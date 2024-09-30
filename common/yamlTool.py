@@ -8,7 +8,7 @@
 """
 
 import os
-import yaml
+from ruamel.yaml import YAML
 
 from common.logger.logTool import logger
 from common.pathTool import PathTool
@@ -26,24 +26,34 @@ class YamlTool(object):
         :param file_path: YAML文件的路径
         """
         self.file_path = PathTool.get_splicing_path(file_path)
-        self.data = self.load_yaml()
+        self.yaml = YAML()
+        self.yaml.preserve_quotes = True  # 保留引号
+        self.data = self._load_yaml()
 
-    def load_yaml(self):
-        """
-        加载YAML文件并返回内容。
-        :return: 返回YAML文件内容（字典格式）。
-        """
-        if os.path.exists(self.file_path):
-            with open(self.file_path, 'r', encoding='utf-8') as file:
-                return yaml.safe_load(file) or {}  # 返回字典或空字典
-        return {}
+    def _load_yaml(self):
+        try:
+            if os.path.exists(self.file_path):
+                with open(self.file_path, 'r', encoding='utf-8') as f:
+                    data = self.yaml.load(f)
+                    logger.info(f"加载YAML文件成功: {self.file_path}")
+                    return data
+            else:
+                logger.error(f"文件不存在: {self.file_path}")
+                return {}
+        except Exception as ex:
+            logger.error(f"加载YAML文件失败: {ex}")
+            return {}
 
     def save_yaml(self):
         """
         保存当前内存中的YAML数据到文件。
         """
-        with open(self.file_path, 'w', encoding='utf-8') as file:
-            yaml.safe_dump(self.data, file, default_flow_style=False, allow_unicode=True)
+        try:
+            with open(self.file_path, 'w', encoding='utf-8') as f:
+                self.yaml.dump(self.data, f)
+            logger.info(f"保存YAML文件成功: {self.file_path}")
+        except Exception as ex:
+            logger.error(f"保存YAML文件失败: {ex}")
 
     def add(self, key, value):
         """
@@ -53,6 +63,7 @@ class YamlTool(object):
         """
         self.data[key] = value
         self.save_yaml()
+        logger.info(f"添加键值对: {key} = {value} 到文件 {self.file_path}")
 
     def delete(self, key):
         """
@@ -62,8 +73,9 @@ class YamlTool(object):
         if key in self.data:
             del self.data[key]
             self.save_yaml()
+            logger.info(f"删除键 {key} 在文件 {self.file_path}")
         else:
-            logger.error(f"{key} 不存在")
+            logger.warning(f"键 {key} 不存在于文件 {self.file_path}")
 
     def update(self, key, value):
         """
@@ -74,8 +86,9 @@ class YamlTool(object):
         if key in self.data:
             self.data[key] = value
             self.save_yaml()
+            logger.info(f"更新键值对: {key} = {value} 在文件 {self.file_path}")
         else:
-            logger.error(f"{key} 不存在")
+            logger.warning(f"键 {key} 不存在于文件 {self.file_path}")
 
     def get(self, key):
         """
@@ -83,7 +96,9 @@ class YamlTool(object):
         :param key: 要获取的键
         :return: 返回对应的值
         """
-        return self.data.get(key, None)
+        value = self.data.get(key)
+        logger.info(f"获取键 {key} 的值: {value} 在文件 {self.file_path}")
+        return value
 
     def display(self):
         """
@@ -98,10 +113,14 @@ class YamlTool(object):
         :param child_key: 子键，例如platformVersion
         :return: 返回子键对应的值
         """
-        if parent_key in self.data and isinstance(self.data[parent_key], dict):
-            return self.data[parent_key].get(child_key, None)
+        parent_value = self.data.get(parent_key)
+        if isinstance(parent_value, dict):
+            child_value = parent_value.get(child_key)
+            logger.info(f"获取嵌套键 {parent_key}.{child_key} 的值: {child_value} 在文件 {self.file_path}")
+            return child_value
         else:
-            logger.error(f"{parent_key} 不存在或者不是字典")
+            logger.error(f"父键 {parent_key} 不存在或不是字典类型")
+            return None
 
     def update_nested_value(self, parent_key, child_key, new_value):
         """
@@ -110,11 +129,13 @@ class YamlTool(object):
         :param child_key: 子键，例如platformVersion
         :param new_value: 新值
         """
-        if parent_key in self.data and isinstance(self.data[parent_key], dict):
-            self.data[parent_key][child_key] = new_value
+        parent_value = self.data.get(parent_key)
+        if isinstance(parent_value, dict):
+            parent_value[child_key] = new_value
             self.save_yaml()
+            logger.info(f"更新嵌套键 {parent_key}.{child_key} 的值为: {new_value} 在文件 {self.file_path}")
         else:
-            logger.error(f"{parent_key} 不存在或者不是字典")
+            logger.error(f"父键 {parent_key} 不存在或不是字典类型")
 
 
 # 测试获取yaml配置数据
@@ -132,12 +153,9 @@ if __name__ == '__main__':
 
     # 获取desired_caps_mi6中的platformVersion值
     platform_version = yaml_editor.get_nested_value('desired_caps_poco', 'platformVersion')
-    print(platform_version)  # 输出：9
 
-    yaml_editor.update_nested_value('desired_caps_mi6', 'platformVersion', 10)
+    yaml_editor.update_nested_value('desired_caps_mi6', 'noReset', False)
 
     # 验证更新是否成功
-    updated_version = yaml_editor.get_nested_value('desired_caps_mi6', 'platformVersion')
-    print(updated_version)  # 输出：10
-
+    updated_version = yaml_editor.get_nested_value('desired_caps_mi6', 'noReset')
 

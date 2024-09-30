@@ -102,12 +102,11 @@ class YamlManager:
 
 
 if __name__ == '__main__':
-    yaml_manager = YamlManager(['config1.yaml', 'config2.yaml'])
+    yaml_manager = YamlManager(['config/example.yaml', 'config2.yaml'])
 
     # 获取config2.yaml中desired_caps_mi6的platformVersion值
-    platform_version = yaml_manager.get_nested_value('config2.yaml', 'desired_caps_mi6', 'platformVersion')
-    print(platform_version)
+    yaml_manager.get_nested_value('config/example.yaml', 'desired_caps_mi6', 'platformVersion')
 
     # 更新config2.yaml中desired_caps_mi6的platformVersion值为10
-    yaml_manager.update_nested_value('config2.yaml', 'desired_caps_mi6', 'platformVersion', 10)
+    yaml_manager.update_nested_value('config/example.yaml', 'desired_caps_mi6', 'platformVersion', 1000)
 
