@@ -1,6 +1,6 @@
 from base.read_httpserver_config import Read_Http_Server_Config
-from common.dateTimeTool import DateTimeTool
 from common.strTool import StrTool
+from common.logger import logger
 import multiprocessing
 import platform
 import subprocess
@@ -26,14 +26,12 @@ def http_server_init():
             httpserver_process_id = StrTool.getStringWithLBRB(httpserver_process_id, 'LISTENING', '\r\n').strip()
             kill_httpserver_process_command = 'taskkill /F /pid %s' % httpserver_process_id
             try:
-                print('%s关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % (
-                    DateTimeTool.getNowTime(), httpserver_process_id, port))
+                logger.info('关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % httpserver_process_id, port)
                 subprocess.check_call(kill_httpserver_process_command, shell=True)
             except:
-                print('%s关闭http.server进程失败,进程id:%s,该进程监听已监听端口:%s' % (
-                    DateTimeTool.getNowTime(), httpserver_process_id, port))
+                logger.error('关闭http.server进程失败,进程id:%s,该进程监听已监听端口:%s' % httpserver_process_id, port)
         except:
-            print('%shttp.server未查找到监听端口%s的服务' % (DateTimeTool.getNowTime(), port))
+            logger.error('http.server未查找到监听端口%s的服务' % port)
     elif "linux" == platform.system().lower():
         # 获得当前httpserver所有进程id
         get_httpserver_process_ids_command = "ps -ef|grep 'http.server %s'|grep -v grep|awk '{print $2}'" % port
@@ -43,20 +41,18 @@ def http_server_init():
             get_lambda = lambda info: list(filter(None, info.split('\n'))) if info else []
             httpserver_process_ids = get_lambda(httpserver_process_ids)
             if not len(httpserver_process_ids) > 0:
-                print('%shttp.server未查找到监听端口%s的服务' % (DateTimeTool.getNowTime(), port))
+                logger.error('http.server未查找到监听端口%s的服务' % port)
             for httpserver_process_id in httpserver_process_ids:
                 try:
-                    print('%s关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % (
-                        DateTimeTool.getNowTime(), httpserver_process_id, port))
+                    logger.info('关闭http.server进程,进程id:%s,该进程监听已监听端口:%s' % httpserver_process_id, port)
                     subprocess.check_output("kill -9 " + httpserver_process_id, shell=True)
                 except:
-                    print('%s关闭http.server进程失败,进程id:%s,该进程监听已监听端口:' % (
-                        DateTimeTool.getNowTime(), httpserver_process_id, port))
+                    logger.error('关闭http.server进程失败,进程id:%s,该进程监听已监听端口:' % httpserver_process_id, port)
         except:
-            print('%shttp.server未查找到监听端口%s的服务' % (DateTimeTool.getNowTime(), port))
+            logger.error('http.server未查找到监听端口%s的服务' % port)
     elif "darwin" == platform.system().lower():
         pass
-    print('%s启动http.server,使用端口%s' % (DateTimeTool.getNowTime(), port))
+    logger.info('启动http.server,使用端口%s' % port)
     p = multiprocessing.Process(target=start_http_server, args=(port,))
     p.daemon = True
     p.start()

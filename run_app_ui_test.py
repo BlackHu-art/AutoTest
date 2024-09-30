@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+# -*- coding: utf-8 -*-
 
 from base.read_app_ui_config import Read_APP_UI_Config
 from base.read_app_ui_devices_info import Read_APP_UI_Devices_Info
@@ -10,6 +10,7 @@ from common.pytest import deal_pytest_ini_file
 from init.java.java_maven_init import java_maven_init
 from init.httpserver.http_server_init import http_server_init
 from init.mitmproxy.mitmproxy_init import mitmproxy_init
+from common.logger import logger
 import argparse
 import multiprocessing
 import os
@@ -28,22 +29,23 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
             if (int(file) == index):
                 os.rename(os.path.join(path, file), os.path.join(path, str(os.getpid())))
 
-    print('%s开始检测appium server是否可用......' % DateTimeTool.getNowTime())
+    logger.info('开始检测appium server是否可用......')
     try:
         doRquest = DoRequest('http://' + device_info['server_ip'] + ':%s/wd/hub' % device_info['server_port'].strip())
         httpResponseResult = doRquest.get('/status')
         result = ujson.loads(httpResponseResult.body)
         if result['status'] == 0:
-            print('%sappium server状态为可用......' % DateTimeTool.getNowTime())
+            logger.info('appium server状态为可用......')
         else:
-            sys.exit('%sappium server状态为不可用' % DateTimeTool.getNowTime())
+            logger.error('appium server状态为不可用......')
+            sys.exit()
     except:
-        print('%sappium server状态为不可用' % DateTimeTool.getNowTime())
-        raise Exception('%sappium server状态为不可用' % DateTimeTool.getNowTime())
+        logger.error('appium server状态为不可用......')
+        raise Exception()
 
     a_devices_desired_capabilities = device_info['capabilities']
-    print('%s开始设备%s测试......' % (DateTimeTool.getNowTime(), device_info['device_desc']))
-    print('%s当前设备所需测试的desired_capabilities为:%s' % (DateTimeTool.getNowTime(), a_devices_desired_capabilities))
+    logger.info('开始设备%s测试......' % device_info['device_desc'])
+    logger.info('当前设备所需测试的desired_capabilities为:%s' % a_devices_desired_capabilities)
     for desired_capabilities in a_devices_desired_capabilities:
         FileTool.writeObjectIntoFile(desired_capabilities,
                                      'config/app_ui_tmp/' + str(os.getpid()) + '_current_desired_capabilities')
@@ -54,7 +56,7 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
             desired_capabilities_desc = desired_capabilities['app'].split('/')[-1]
         elif 'bundleId' in desired_capabilities.keys():
             desired_capabilities_desc = desired_capabilities['bundleId']
-        print('%s当前设备开始测试的desired_capabilities为:%s' % (DateTimeTool.getNowTime(), desired_capabilities))
+        logger.info('当前设备开始测试的desired_capabilities为:%s' %  desired_capabilities)
         # 执行pytest前的参数准备
         pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir', 'output/app_ui/%s/%s/report_data/' % (
             device_info['device_desc'], desired_capabilities_desc)]
@@ -91,8 +93,8 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
         process = multiprocessing.Process(target=pytest_main, args=(pytest_execute_params,))
         process.start()
         process.join()
-        print('%s当前设备结束测试的desired_capabilities为:%s' % (DateTimeTool.getNowTime(), desired_capabilities))
-    print('%s结束设备%s测试......' % (DateTimeTool.getNowTime(), device_info['device_desc']))
+        logger.info('当前设备结束测试的desired_capabilities为:%s' % desired_capabilities)
+    logger.info('结束设备%s测试......' % device_info['device_desc'])
 
 
 if __name__ == '__main__':
@@ -137,10 +139,10 @@ if __name__ == '__main__':
         if test_type == 'phone':
             if not devices_info_file:
                 raise ValueError('请指定多设备并行信息文件,查看帮助:python run_app_ui_test.py --help')
-            print(f'{DateTimeTool.getNowTime()} 开始初始化进程......')
+            logger.info('开始初始化进程......')
             p_pool = Custom_Pool(int(Read_APP_UI_Config().app_ui_config.max_device_pool))
             devices_info = Read_APP_UI_Devices_Info(devices_info_file).devices_info
-            print(f'{DateTimeTool.getNowTime()} 当前使用的配置文件为:{devices_info_file}')
+            logger.info('当前使用的配置文件路径:' + devices_info_file)
             if os.path.exists('config/app_ui_tmp'):
                 FileTool.truncateDir('config/app_ui_tmp/')
             else:
@@ -155,5 +157,5 @@ if __name__ == '__main__':
         else:
             sys.exit()
     except Exception as e:
-        print(f'发生错误: {e}')
+        logger.error(f'发生错误: {e}')
         sys.exit(1)
