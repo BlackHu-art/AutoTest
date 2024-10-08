@@ -19,7 +19,22 @@ import ujson
 
 
 def pytest_main(pytest_execute_params):
-    exit_code = pytest.main(pytest_execute_params)
+    """
+    执行 pytest 测试，不返回退出码，仅记录执行状态。
+
+    :param pytest_execute_params: pytest 的命令行参数列表
+    :type pytest_execute_params: list
+    """
+    try:
+        # 调用 pytest.main()
+        pytest.main(pytest_execute_params)
+
+        # 记录执行结果，确保将 int 转换为 str 输出
+        # logger.info(f"pytest 主函数执行完成，退出码：{exit_code}")
+
+    except Exception as e:
+        logger.error(f"pytest 主函数执行失败： {str(e)}", exc_info=True)
+        raise
 
 
 def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, reruns, lf, clr):
@@ -73,20 +88,36 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
         pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir',
                                  f'output/{device_info["device_desc"]}/{desired_capabilities_desc}/report_data/']
 
-        if not dir:
-            dir = 'cases/doozy_tv/'
+        # 判断关键字参数
         if keyword:
-            pytest_execute_params.extend(['-k', keyword])
+            pytest_execute_params.append('-k')
+            pytest_execute_params.append(keyword)
+            logger.info(f'当前设备开始测试的关键字keyword为: {keyword}')
+        # 判断markexpr参数
         if markexpr:
-            pytest_execute_params.extend(['-m', markexpr])
-        if capture and int(capture):
-            pytest_execute_params.append('-s')
-        if reruns and int(reruns):
-            pytest_execute_params.extend(['--reruns', reruns])
-        if lf and int(lf):
-            pytest_execute_params.append('--lf')
-        if clr and int(clr):
-            pytest_execute_params.append('--clean-alluredir')
+            pytest_execute_params.append('-m')
+            pytest_execute_params.append(markexpr)
+            logger.info(f'当前设备开始测试的markexpr为: {markexpr}')
+        # 判断是否输出日志
+        if capture:
+            if int(capture):
+                pytest_execute_params.append('-s')
+        # 判断是否失败重跑
+        if reruns:
+            if int(reruns):
+                pytest_execute_params.append('--reruns')
+                pytest_execute_params.append(reruns)
+                logger.info(f'当前设备失败重跑次数为: {reruns}')
+        # 判断是否只运行上一次失败的用例
+        if lf:
+            if int(lf):
+                pytest_execute_params.append('--lf')
+                logger.info('只运行上一次失败的用例')
+        # 判断是否清空已有测试结果
+        if clr:
+            if int(clr):
+                pytest_execute_params.append('--clean-alluredir')
+                logger.info(f'执行清空已有测试结果：{clr}')
         pytest_execute_params.append(dir)
         # 启动子进程
         process = Process(target=pytest_main, args=(pytest_execute_params,))

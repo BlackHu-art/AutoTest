@@ -46,7 +46,7 @@ class Android_Project_Client(object):
         elif is_need_kill_app:
             # appium启动是非重置或者非第一次appium启动，则要进行重启进程
             if self.__is_first == False or self.noReset == True:
-                self.appOperator.start_activity('com.moji.mjweather', 'com.moji.mjweather.MainActivity')
+                self.appOperator.start_activity(self.device_info['appPackage'], self.device_info['appActivity'])
 
         self.__is_first = False
 

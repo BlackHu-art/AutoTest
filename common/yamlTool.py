@@ -109,7 +109,7 @@ class YamlTool(object):
 
         self.data[key] = value
         self.save_yaml()  # 保存更改到文件
-        logger.info(f"添加键值对: {key} = {value} 到文件 {self.file_path}")
+        # logger.info(f"添加键值对: {key} = {value} 到文件 {self.file_path}")
 
     def display(self):
         """
