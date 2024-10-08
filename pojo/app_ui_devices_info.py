@@ -1,6 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/10/8 9:22
+"""
 from base.read_httpserver_config import Read_Http_Server_Config
 from common.logger.logTool import logger
 from common.pathTool import path_tool
+from common.yamlTool import YamlTool
 
 
 class APP_UI_Devices_Info:
@@ -180,6 +189,8 @@ class APP_UI_Devices_Info:
                     logger.info(f"Setting noReset for device {i}: {noReset}")
 
                 a_devices_desired_capabilities.append(desired_capabilities)
+                # 将desired_capabilities添加到yaml文件
+                YamlTool('config/example.yaml').add(self.devices_desc[i].strip(), desired_capabilities)
 
             # 更新设备信息中的capabilities
             device_info.update({'capabilities': a_devices_desired_capabilities})

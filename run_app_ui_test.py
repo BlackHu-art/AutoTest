@@ -71,10 +71,10 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
 
         # 构建 Pytest 的命令行参数
         pytest_execute_params = ['-c', 'config/pytest.ini', '-v', '--alluredir',
-                                 f'output/app_ui/{device_info["device_desc"]}/{desired_capabilities_desc}/report_data/']
+                                 f'output/{device_info["device_desc"]}/{desired_capabilities_desc}/report_data/']
 
         if not dir:
-            dir = 'cases/app_ui/'
+            dir = 'cases/doozy_tv/'
         if keyword:
             pytest_execute_params.extend(['-k', keyword])
         if markexpr:

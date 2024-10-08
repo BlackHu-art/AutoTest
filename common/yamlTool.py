@@ -9,7 +9,7 @@
 
 import os
 from ruamel.yaml import YAML
-
+from ast import literal_eval
 from common.logger.logTool import logger
 from common.pathTool import PathTool
 
@@ -55,16 +55,6 @@ class YamlTool(object):
         except Exception as ex:
             logger.error(f"保存YAML文件失败: {ex}")
 
-    def add(self, key, value):
-        """
-        添加或更新YAML文件中的键值对。
-        :param key: 键
-        :param value: 值
-        """
-        self.data[key] = value
-        self.save_yaml()
-        logger.info(f"添加键值对: {key} = {value} 到文件 {self.file_path}")
-
     def delete(self, key):
         """
         删除YAML文件中的键值对。
@@ -99,6 +89,27 @@ class YamlTool(object):
         value = self.data.get(key)
         logger.info(f"获取键 {key} 的值: {value} 在文件 {self.file_path}")
         return value
+
+    def add(self, key, value_str):
+        """
+        添加一个键值对到 YAML 文件中。如果值是字符串形式的字典，将其解析为字典。
+        :param key: 要添加的键
+        :param value_str: 字符串形式的值，如果是键值对的字符串，将其解析为字典
+        """
+        try:
+            # 尝试将字符串转换为字典或其他类型的 Python 对象
+            value = literal_eval(value_str)
+        except (ValueError, SyntaxError):
+            # 如果无法转换，保留原始字符串作为值
+            value = value_str
+
+        # 将键值对添加到 YAML 数据中
+        if key in self.data:
+            logger.warning(f"键 {key} 已存在于文件 {self.file_path}，将覆盖其值")
+
+        self.data[key] = value
+        self.save_yaml()  # 保存更改到文件
+        logger.info(f"添加键值对: {key} = {value} 到文件 {self.file_path}")
 
     def display(self):
         """
@@ -142,20 +153,24 @@ class YamlTool(object):
 if __name__ == '__main__':
     # 加载YAML文件
     yaml_editor = YamlTool('config/example.yaml')
+    # yaml_editor.add("test_key", "{'app': 'D:\WORK_PY\AutoTest\config\example.yaml', 'appActivity': "
+    #                             "'com.mm.droid.livetv.load.LiveLoadActivity', 'appPackage': "
+    #                             "'com.mm.droid.livetv.stb31023418', 'deviceName': '10.0.0.132:5188', 'platformName': "
+    #                             "'Android', 'platformVersion': 9}")
 
-    print(yaml_editor.get("desired_caps_poco"))
-    # 获取 YAML 编辑器的显示结果，并记录日志
-    try:
-        display_result = yaml_editor.display()
-        logger.info(display_result)
-    except Exception as e:
-        logger.error("获取 YAML 显示结果时发生错误: %s", str(e))
-
-    # 获取desired_caps_mi6中的platformVersion值
-    platform_version = yaml_editor.get_nested_value('desired_caps_poco', 'platformVersion')
-
-    yaml_editor.update_nested_value('desired_caps_mi6', 'noReset', False)
-
-    # 验证更新是否成功
-    updated_version = yaml_editor.get_nested_value('desired_caps_mi6', 'noReset')
+    # print(yaml_editor.get("desired_caps_poco"))
+    # # 获取 YAML 编辑器的显示结果，并记录日志
+    # try:
+    #     display_result = yaml_editor.display()
+    #     logger.info(display_result)
+    # except Exception as e:
+    #     logger.error("获取 YAML 显示结果时发生错误: %s", str(e))
+    #
+    # # 获取desired_caps_mi6中的platformVersion值
+    # platform_version = yaml_editor.get_nested_value('desired_caps_poco', 'platformVersion')
+    #
+    # yaml_editor.update_nested_value('desired_caps_mi6', 'noReset', False)
+    #
+    # # 验证更新是否成功
+    # updated_version = yaml_editor.get_nested_value('desired_caps_mi6', 'noReset')
 

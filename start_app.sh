@@ -14,7 +14,7 @@
 #  -dif  DEVICES_INFO_FILE, --devices_info_file DEVICES_INFO_FILE    【必填】多设备并行信息文件，当--test_type为phone时，此选项需提供
 #  -clr  CLR,         --clr CLR                                       是否清空已有测试结果,1:是、0:否,默认为0
 
-python -u run_app_ui_test.py -tt phone -k test_ -dif config/doozy_tv/devices_conf_info_tv.conf
+python -u run_app_ui_test.py -d cases/doozy_tv/ -s 1 -r 1 -lf 0 -tt phone -dif config/doozy_tv/devices_conf_info_tv.conf -clr 1
 
 
 
