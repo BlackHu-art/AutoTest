@@ -30,10 +30,10 @@ if __name__ == '__main__':
         start_port = report_config.app_ui_start_port
     test_time = DateTimeTool.getNowTime('%Y_%m_%d_%H_%M_%S_%f')
     report_dirs = []
-    devices_dirs = os.listdir('output/app_ui/')
+    devices_dirs = os.listdir('output/')
     for device_dir in devices_dirs:
-        for report_dir in os.listdir('output/app_ui/' + device_dir):
-            report_dirs.append('output/app_ui/' + device_dir + '/' + report_dir)
+        for report_dir in os.listdir('output/' + device_dir):
+            report_dirs.append('output/' + device_dir + '/' + report_dir)
 
     if 'Windows' == platform.system():
         # 初始化进程池
