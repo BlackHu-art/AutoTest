@@ -8,8 +8,8 @@ from appium.webdriver.webelement import WebElement
 from common.dateTimeTool import DateTimeTool
 from common.httpclient.doRequest import DoRequest
 from page_objects.createElement import CreateElement
-from page_objects.app_ui.locator_type import Locator_Type
-from page_objects.app_ui.wait_type import Wait_Type as Wait_By
+from page_objects.doozy_tv.locator_type import Locator_Type
+from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
 from pojo.elementInfo import ElementInfo
 from PIL import Image
 from selenium.common.exceptions import StaleElementReferenceException

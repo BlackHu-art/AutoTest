@@ -1,8 +1,8 @@
 # -*- coding:utf8 -*-
 
 from page_objects.createElement import CreateElement
-from page_objects.app_ui.wait_type import Wait_Type as Wait_By
-from page_objects.app_ui.locator_type import Locator_Type
+from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
+from page_objects.doozy_tv.locator_type import Locator_Type
 
 
 class StartPageElements:

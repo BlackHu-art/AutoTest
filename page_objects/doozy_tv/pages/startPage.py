@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-from page_objects.app_ui.elements.startPageElements import StartPageElements
-from page_objects.app_ui.pages.indexPage import IndexPage
+from page_objects.doozy_tv.elements.startPageElements import StartPageElements
+from page_objects.doozy_tv.pages.indexPage import IndexPage
 
 
 class StartPage:

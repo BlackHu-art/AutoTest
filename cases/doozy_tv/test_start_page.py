@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 
 from base.app_ui.android_Project_client import Android_Project_Client
-from page_objects.app_ui.pages.startPage import StartPage
+from page_objects.doozy_tv.pages.startPage import StartPage
 import pytest
 
 

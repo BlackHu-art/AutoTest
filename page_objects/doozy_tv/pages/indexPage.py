@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from page_objects.app_ui.elements.indexPageElements import IndexPageElements
+from page_objects.doozy_tv.elements.indexPageElements import IndexPageElements
 
 
 class IndexPage:
