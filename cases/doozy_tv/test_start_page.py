@@ -2,6 +2,7 @@
 
 from base.app_ui.android_Project_client import Android_Project_Client
 from page_objects.doozy_tv.pages.startPage import StartPage
+from common.logger.logTool import logger
 import pytest
 
 
@@ -26,12 +27,11 @@ class TestStartPage:
             使用yield提供fixture对象给测试函数使用；
             测试完成后，打印“end......”。
         """
-        print('start......')
+        logger.info('\n......start......')
         yield self.fixture_test
-        print('end......')
+        logger.info('\n...... end ......')
 
     def test_click_allow_btn(self, fixture_test):
-        self.demoProjectClient.appOperator.reset_app()
         self.startPage.click_allow_btn()
 
     def test_click_deny_btn(self, fixture_test):
