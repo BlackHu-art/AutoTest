@@ -6,7 +6,7 @@ scikit-image~=0.24.0
 opencv-python~=4.10.0.84
 ujson~=5.10.0
 # pytest
-pytest==8.3.3
+pytest==8.0.2
 # database
 PyMySQL==1.1.1
 SQLAlchemy==2.0.35

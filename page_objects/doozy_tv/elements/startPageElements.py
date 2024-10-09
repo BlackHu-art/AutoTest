@@ -7,9 +7,10 @@ from page_objects.doozy_tv.locator_type import Locator_Type
 
 class StartPageElements:
     def __init__(self):
-        self.start_btn = CreateElement.create(Locator_Type.ID, 'com.moji.mjweather:id/zc',
+
+        self.permission_container = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/dialog_container',
+                                                    wait_type=Wait_By.VISIBILITY_OF)
+        self.permission_allow_button = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/permission_allow_button',
                                               wait_type=Wait_By.VISIBILITY_OF)
-        self.search_city = CreateElement.create(Locator_Type.ID, 'com.moji.mjweather:id/d',
-                                                wait_type=Wait_By.VISIBILITY_OF)
-        self.city_btns = CreateElement.create(Locator_Type.ID, 'com.moji.mjweather:id/abk',
-                                              wait_type=Wait_By.VISIBILITY_OF)
+        self.permission_deny_button = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/permission_allow_button',
+                                                           wait_type=Wait_By.VISIBILITY_OF)

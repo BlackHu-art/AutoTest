@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
-
+from common.logger.logTool import logger
 from page_objects.doozy_tv.elements.startPageElements import StartPageElements
-from page_objects.doozy_tv.pages.indexPage import IndexPage
 
 
 class StartPage:
@@ -9,19 +8,22 @@ class StartPage:
         self.appOperator = appOperator
         self._startPageElements = StartPageElements()
 
-    def click_start(self):
-        self.appOperator.get_screenshot('start_page')
-        self.appOperator.click(self._startPageElements.start_btn)
+    def is_allow_container_displayed(self):
+        if self.appOperator.is_displayed(self._startPageElements.permission_container):
+            self.appOperator.get_screenshot('dialog_container')
+            logger.info('permission_container is displayed')
+            return True
+        else:
+            logger.info('permission_container is not displayed')
+            return False
 
-    def searh_city(self, city_name):
-        self.appOperator.get_screenshot('search_city_page')
-        self.appOperator.sendText(self._startPageElements.search_city, city_name)
-        self.appOperator.get_screenshot('search_city_' + city_name)
+    def click_allow_btn(self):
+        self.appOperator.touch_tap(self._startPageElements.permission_allow_button)
+        logger.info('touch_tap permission_allow_button')
 
-    def choice_a_city(self):
-        city_btns = self.appOperator.getElements(self._startPageElements.city_btns)
-        self.appOperator.click(city_btns[2])
-        return IndexPage(self.appOperator)
+    def click_deny_btn(self):
+        self.appOperator.click(self._startPageElements.permission_deny_button)
+        logger.info('click permission_deny_button')
 
     def getElements(self):
         return self._startPageElements
