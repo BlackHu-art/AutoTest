@@ -7,9 +7,10 @@
  @time        :  2024/10/8 16:53
 """
 
-
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.ui import WebDriverWait
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
 from common.dateTimeTool import DateTimeTool
@@ -17,6 +18,7 @@ from common.httpclient.doRequest import DoRequest
 from page_objects.createElement import CreateElement
 from page_objects.doozy_tv.locator_type import Locator_Type
 from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
+from selenium.webdriver.common.by import By
 from pojo.elementInfo import ElementInfo
 from PIL import Image
 
@@ -422,10 +424,7 @@ class AppOperator:
 
     def hide_keyboard(self):
         """
-        隐藏键盘,ios需要指定key_name或strategy,Android无需参数
-       :param key_name:
-        :param key:
-        :param strategy:
+        隐藏键盘,Android无需参数
         :return:
         """
         self._driver.hide_keyboard()
@@ -891,7 +890,6 @@ class AppOperator:
     def touch_left_slide(self, start_x_percent=0.5, start_y_percent=0.5, duration=500):
         """
         通过屏幕宽度、高度的百分比值的位置点击滑动到元素的左边缘
-        :param element:
         :param start_x_percent: 相对屏幕宽度的百分比
         :param start_y_percent: 相对屏幕高度的百分比
         :return:
@@ -909,7 +907,6 @@ class AppOperator:
     def touch_right_slide(self, start_x_percent=0.5, start_y_percent=0.5, duration=500):
         """
         通过屏幕宽度、高度的百分比值的位置点击滑动到元素的右边缘
-        :param element:
         :param start_x_percent: 相对屏幕宽度的百分比
         :param start_y_percent: 相对屏幕高度的百分比
         :return:
@@ -927,7 +924,6 @@ class AppOperator:
     def touch_up_slide(self, start_x_percent=0.5, start_y_percent=0.5, duration=500):
         """
         通过屏幕宽度、高度的百分比值的位置点击滑动到元素的上边缘
-        :param element:
         :param start_x_percent: 相对屏幕宽度的百分比
         :param start_y_percent: 相对屏幕高度的百分比
         :return:
@@ -946,7 +942,6 @@ class AppOperator:
     def touch_down_slide(self, start_x_percent=0.5, start_y_percent=0.5, duration=500):
         """
         通过屏幕宽度、高度的百分比值的位置点击滑动到元素的下边缘
-        :param element:
         :param start_x_percent: 相对屏幕宽度的百分比
         :param start_y_percent: 相对屏幕高度的百分比
         :return:
@@ -961,6 +956,305 @@ class AppOperator:
         end_x = self._window_size['width'] * 0.5
         end_y = self._window_size['height'] * 0.99
         self._driver.swipe(start_x, start_y, end_x, end_y, duration)
+
+    def getElement(self, elementInfo):
+        """
+        定位单个元素
+        :param elementInfo:
+        :return:
+        """
+        webElement = None
+        locator_type = elementInfo.locator_type
+        locator_value = elementInfo.locator_value
+        wait_type = elementInfo.wait_type
+        wait_seconds = elementInfo.wait_seconds
+        wait_expected_value = elementInfo.wait_expected_value
+        if wait_expected_value:
+            wait_expected_value = wait_expected_value
+
+        # 查找元素,为了保证元素被定位,都进行显式等待
+        if wait_type == Wait_By.TITLE_IS:
+            webElement = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.title_is(wait_expected_value))
+        elif wait_type == Wait_By.TITLE_CONTAINS:
+            webElement = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.title_contains(wait_expected_value))
+        elif wait_type == Wait_By.PRESENCE_OF_ELEMENT_LOCATED:
+            webElement = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.presence_of_element_located((locator_type, locator_value)))
+        elif wait_type == Wait_By.ELEMENT_TO_BE_CLICKABLE:
+            webElement = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.element_to_be_clickable((locator_type, locator_value)))
+        elif wait_type == Wait_By.ELEMENT_LOCATED_TO_BE_SELECTED:
+            webElement = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.element_located_to_be_selected((locator_type, locator_value)))
+        elif wait_type == Wait_By.VISIBILITY_OF:
+            webElements = WebDriverWait(self._driver, wait_seconds).until(
+                (expected_conditions.visibility_of_all_elements_located((locator_type, locator_value))))
+            if len(webElements) > 0:
+                webElement = webElements[0]
+        else:
+            if locator_type == By.ID:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_id(locator_value))
+            elif locator_type == By.NAME:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_name(locator_value))
+            elif locator_type == By.LINK_TEXT:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_link_text(locator_value))
+            elif locator_type == By.XPATH:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_xpath(locator_value))
+            elif locator_type == By.PARTIAL_LINK_TEXT:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_partial_link_text(locator_value))
+            elif locator_type == By.CSS_SELECTOR:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_css_selector(locator_value))
+            elif locator_type == By.CLASS_NAME:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_class_name(locator_value))
+            elif locator_type == By.TAG_NAME:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_tag_name(locator_value))
+            elif locator_type == Locator_Type.ACCESSIBILITY_ID:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_accessibility_id(locator_value))
+            elif locator_type == Locator_Type.IMAGE:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_image(locator_value))
+            elif locator_type == Locator_Type.ANDROID_UIAUTOMATOR:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_android_uiautomator(locator_value))
+            elif locator_type == Locator_Type.ANDROID_DATA_MATCHER:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_android_data_matcher(locator_value))
+            elif locator_type == Locator_Type.ANDROID_VIEWTAG:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_android_viewtag(locator_value))
+            elif locator_type == Locator_Type.IOS_UIAUTOMATION:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_ios_uiautomation(locator_value))
+            elif locator_type == Locator_Type.IOS_CLASS_CHAIN:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_ios_class_chain(locator_value))
+            elif locator_type == Locator_Type.IOS_PREDICATE:
+                webElement = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_element_by_ios_predicate(locator_value))
+        return webElement
+
+    def getElements(self, elementInfo):
+        """
+        定位多个元素
+        :param elementInfo:
+        :return:
+        """
+        webElements = None
+        locator_type = elementInfo.locator_type
+        locator_value = elementInfo.locator_value
+        wait_type = elementInfo.wait_type
+        wait_seconds = elementInfo.wait_seconds
+
+        # 查找元素,为了保证元素被定位,都进行显式等待
+        if wait_type == Wait_By.PRESENCE_OF_ELEMENT_LOCATED:
+            webElements = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.presence_of_all_elements_located((locator_type, locator_value)))
+        elif wait_type == Wait_By.VISIBILITY_OF:
+            webElements = WebDriverWait(self._driver, wait_seconds).until(
+                expected_conditions.visibility_of_all_elements_located((locator_type, locator_value)))
+        else:
+            if locator_type == By.ID:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_id(locator_value))
+            elif locator_type == By.NAME:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_name(locator_value))
+            elif locator_type == By.LINK_TEXT:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_link_text(locator_value))
+            elif locator_type == By.XPATH:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_xpath(locator_value))
+            elif locator_type == By.PARTIAL_LINK_TEXT:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_partial_link_text(locator_value))
+            elif locator_type == By.CSS_SELECTOR:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_css_selector(locator_value))
+            elif locator_type == By.CLASS_NAME:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_class_name(locator_value))
+            elif locator_type == By.TAG_NAME:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_tag_name(locator_value))
+            elif locator_type == Locator_Type.ACCESSIBILITY_ID:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_accessibility_id(locator_value))
+            elif locator_type == Locator_Type.IMAGE:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_image(locator_value))
+            elif locator_type == Locator_Type.ANDROID_UIAUTOMATOR:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_android_uiautomator(locator_value))
+            elif locator_type == Locator_Type.ANDROID_DATA_MATCHER:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_android_data_matcher(locator_value))
+            elif locator_type == Locator_Type.ANDROID_VIEWTAG:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_android_viewtag(locator_value))
+            elif locator_type == Locator_Type.IOS_UIAUTOMATION:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_ios_uiautomation(locator_value))
+            elif locator_type == Locator_Type.IOS_CLASS_CHAIN:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_ios_class_chain(locator_value))
+            elif locator_type == Locator_Type.IOS_PREDICATE:
+                webElements = WebDriverWait(self._driver, wait_seconds).until(
+                    lambda driver: driver.find_elements_by_ios_predicate(locator_value))
+        return webElements
+
+    def getSubElement(self, parent_element, sub_elementInfo):
+        """
+        获得元素的单个子元素
+        :param parent_element: 父元素
+        :param sub_elementInfo: 子元素,只能提供pojo.elementInfo.ElementInfo类型
+        :return:
+        """
+        webElement = self._change_element_to_webElement_type(parent_element)
+        if not webElement:
+            return None
+        if not isinstance(sub_elementInfo, ElementInfo):
+            return None
+
+        # 通过父元素查找子元素
+        locator_type = sub_elementInfo.locator_type
+        locator_value = sub_elementInfo.locator_value
+        wait_seconds = sub_elementInfo.wait_seconds
+
+        # 查找元素,为了保证元素被定位,都进行显式等待
+        if locator_type == By.ID:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_id(locator_value))
+        elif locator_type == By.NAME:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_name(locator_value))
+        elif locator_type == By.LINK_TEXT:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_link_text(locator_value))
+        elif locator_type == By.XPATH:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_xpath(locator_value))
+        elif locator_type == By.PARTIAL_LINK_TEXT:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_partial_link_text(locator_value))
+        elif locator_type == By.CSS_SELECTOR:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_css_selector(locator_value))
+        elif locator_type == By.CLASS_NAME:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_class_name(locator_value))
+        elif locator_type == By.TAG_NAME:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_tag_name(locator_value))
+        elif locator_type == Locator_Type.ACCESSIBILITY_ID:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_accessibility_id(locator_value))
+        elif locator_type == Locator_Type.IMAGE:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_image(locator_value))
+        elif locator_type == Locator_Type.ANDROID_UIAUTOMATOR:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_android_uiautomator(locator_value))
+        elif locator_type == Locator_Type.ANDROID_DATA_MATCHER:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_android_data_matcher(locator_value))
+        elif locator_type == Locator_Type.ANDROID_VIEWTAG:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_android_viewtag(locator_value))
+        elif locator_type == Locator_Type.IOS_UIAUTOMATION:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_ios_uiautomation(locator_value))
+        elif locator_type == Locator_Type.IOS_CLASS_CHAIN:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_ios_class_chain(locator_value))
+        elif locator_type == Locator_Type.IOS_PREDICATE:
+            subWebElement = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_element_by_ios_predicate(locator_value))
+        else:
+            return None
+        return subWebElement
+
+    def getSubElements(self, parent_element, sub_elementInfo):
+        """
+        获得元素的多个子元素
+        :param parent_element: 父元素
+        :param sub_elementInfo: 子元素,只能提供pojo.elementInfo.ElementInfo类型
+        :return:
+        """
+        webElement = self._change_element_to_webElement_type(parent_element)
+        if not webElement:
+            return None
+        if not isinstance(sub_elementInfo, ElementInfo):
+            return None
+
+        # 通过父元素查找多个子元素
+        locator_type = sub_elementInfo.locator_type
+        locator_value = sub_elementInfo.locator_value
+        wait_seconds = sub_elementInfo.wait_seconds
+
+        # 查找元素,为了保证元素被定位,都进行显式等待
+        if locator_type == By.ID:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_id(locator_value))
+        elif locator_type == By.NAME:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_name(locator_value))
+        elif locator_type == By.LINK_TEXT:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_link_text(locator_value))
+        elif locator_type == By.XPATH:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_xpath(locator_value))
+        elif locator_type == By.PARTIAL_LINK_TEXT:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_partial_link_text(locator_value))
+        elif locator_type == By.CSS_SELECTOR:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_css_selector(locator_value))
+        elif locator_type == By.CLASS_NAME:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_class_name(locator_value))
+        elif locator_type == By.TAG_NAME:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_tag_name(locator_value))
+        elif locator_type == Locator_Type.ACCESSIBILITY_ID:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_accessibility_id(locator_value))
+        elif locator_type == Locator_Type.IMAGE:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_image(locator_type))
+        elif locator_type == Locator_Type.ANDROID_UIAUTOMATOR:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_android_uiautomator(locator_value))
+        elif locator_type == Locator_Type.ANDROID_DATA_MATCHER:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_android_data_matcher(locator_value))
+        elif locator_type == Locator_Type.ANDROID_VIEWTAG:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_android_viewtag(locator_value))
+        elif locator_type == Locator_Type.IOS_UIAUTOMATION:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_ios_uiautomation(locator_value))
+        elif locator_type == Locator_Type.IOS_CLASS_CHAIN:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_ios_class_chain(locator_value))
+        elif locator_type == Locator_Type.IOS_PREDICATE:
+            subWebElements = WebDriverWait(webElement, wait_seconds).until(
+                lambda webElement: webElement.find_elements_by_ios_predicate(locator_value))
+        else:
+            return None
+        return subWebElements
 
     def getDriver(self):
         return self._driver
