@@ -12,9 +12,10 @@ from functools import wraps
 import sys
 import datetime
 from loguru import logger as loguru_logger
+from common.pathTool import path_tool
 from pathlib import Path
-import os
 import configparser
+
 
 def singleton_class_decorator(cls):
     _instance = {}
@@ -36,7 +37,7 @@ class Logger:
 
     def __init__(self):
         self.config = self.read_ini()
-        self.project_path = self.get_project_path()  # 初始化项目路径
+        self.project_path = path_tool.get_project_path()  # 初始化项目路径
         self.logger_add()  # 初始化日志配置
 
     @staticmethod
@@ -56,20 +57,13 @@ class Logger:
             loguru_logger.error(f"读取配置文件失败: {e}")
         return config
 
-    @staticmethod
-    def get_project_path():
-        """
-        获取项目根路径。
-        :return: 项目根目录路径
-        """
-        return Path(__file__).parent.parent
-
     def get_log_path(self):
         """
         获取日志文件路径。
         :return: 日志文件的绝对路径
         """
-        project_log_dir = Path(self.project_path, 'Logs')
+        project_log_dir = Path(self.project_path, 'logs')
+        print(project_log_dir)
         project_log_filename = f'{datetime.date.today()}.log'
         project_log_path = Path(project_log_dir, project_log_filename)
 
