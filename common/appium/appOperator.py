@@ -1,4 +1,11 @@
-# -*- coding:utf8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/10/8 16:53
+"""
 
 
 from appium.webdriver.common.touch_action import TouchAction
