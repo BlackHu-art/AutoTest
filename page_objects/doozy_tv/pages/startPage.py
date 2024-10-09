@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import time
 from common.logger.logTool import logger
 from page_objects.doozy_tv.elements.startPageElements import StartPageElements
 
@@ -20,10 +21,14 @@ class StartPage:
     def click_allow_btn(self):
         self.appOperator.touch_tap(self._startPageElements.permission_allow_button)
         logger.info('touch_tap permission_allow_button')
+        time.sleep(5)
+        self.appOperator.get_screenshot('after_click_allow_btn')
 
     def click_deny_btn(self):
-        self.appOperator.click(self._startPageElements.permission_deny_button)
-        logger.info('click permission_deny_button')
+        self.appOperator.touch_tap(self._startPageElements.permission_deny_button)
+        logger.info('touch_tap permission_deny_button')
+        time.sleep(5)
+        self.appOperator.get_screenshot('after_click_deny_btn')
 
     def getElements(self):
         return self._startPageElements

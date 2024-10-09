@@ -12,7 +12,6 @@ class TestStartPage:
         self.startPage = StartPage(self.demoProjectClient.appOperator)
 
     """该函数为一个Pytest fixture，自动用于每个测试用例"""
-
     # @pytest.fixture(autouse=True)
     # def record_test_case_video(self):
     #     self.demoProjectClient.appOperator.start_recording_screen()
@@ -35,9 +34,9 @@ class TestStartPage:
         self.demoProjectClient.appOperator.reset_app()
         self.startPage.click_allow_btn()
 
-    def test_click_deny_btn(self):
+    def test_click_deny_btn(self, fixture_test):
         self.demoProjectClient.appOperator.reset_app()
         self.startPage.click_deny_btn()
 
     def teardown_class(self):
-        self.demoProjectClient.appOperator.reset_app()
+        self.demoProjectClient.appOperator.close_app()

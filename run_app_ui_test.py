@@ -127,6 +127,7 @@ def start_app_device_test(index, device_info, keyword, dir, markexpr, capture, r
         if process.exitcode != 0:
             logger.error(f'子进程执行失败，exitcode: {process.exitcode}')
             # 进行必要的清理工作
+            process.close()
         logger.info(f'当前设备结束测试的desired_capabilities为: {desired_capabilities}')
     logger.info(f'结束设备{device_info["device_desc"]}测试......')
 
