@@ -30,7 +30,8 @@ class AllureReportGenerator:
         self.test_time = DateTimeTool.getNowTime('%Y_%m_%d_%H_%M_%S_%f')
         self.report_dirs = self._get_report_dirs()
 
-    def _get_report_dirs(self):
+    @staticmethod
+    def _get_report_dirs():
         report_dirs = []
         devices_dirs = os.listdir('output/')
         for device_dir in devices_dirs:
@@ -61,7 +62,8 @@ class AllureReportGenerator:
         p_pool.close()
         p_pool.join()
 
-    def _kill_existing_process_windows(self, port):
+    @staticmethod
+    def _kill_existing_process_windows(port):
         get_allure_process_id_command = f'netstat -ano|findstr "0.0.0.0:{port}"'
         try:
             get_allure_process_id = subprocess.check_output(get_allure_process_id_command, shell=True)
@@ -86,7 +88,8 @@ class AllureReportGenerator:
             print(f'{DateTimeTool.getNowTime()} 报告地址: http://{Network.get_local_ip()}:{port}/')
             self._generate_linux_report(report_dir, port)
 
-    def _kill_existing_process_linux(self, port, allure_process_ids):
+    @staticmethod
+    def _kill_existing_process_linux(port, allure_process_ids):
         get_port_process_ids_command = f"netstat -anp|grep -i {port}|grep -v grep|awk '{{print $7}}'|awk -F '/' '{{print $1}}'"
         port_process_ids = subprocess.check_output(get_port_process_ids_command, shell=True).decode(
             'utf-8').splitlines()
