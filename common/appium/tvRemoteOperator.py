@@ -7,7 +7,6 @@
  @time        :    16:52
 """
 from common.logger.logTool import logger
-from appium.webdriver.common.appiumby import AppiumBy
 from appium.webdriver import Remote
 
 

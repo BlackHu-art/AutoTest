@@ -1,0 +1,19 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+# 生产账号及密码
+USERINFO_PRO:
+  ACCOUNT01: frankieblrs@gmail.com
+  PASSWRD01: 000000
+  ACCOUNT02: frankieblrs0@gmail.com
+  PASSWRD02: 000000
+
+# UAT账号及密码
+USERINFO_UAT:
+  ACCOUNT: 'frankieblrs@gmail.com'
+  PASSWRD: '000000'
+
+# SIT账号及密码
+USERINFO_SIT:
+  ACCOUNT: frankieblrs@gmail.com
+  PASSWRD: 000000
