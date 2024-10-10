@@ -16,6 +16,8 @@
 
 python -u run_app_ui_test.py -d cases/doozy_tv -s 1 -lf 0 -tt phone -dif config/doozy_tv/devices_conf_info_tv.conf -clr 1
 
+python -u run_app_ui_test.py -d cases/tests -s 1 -lf 0 -tt phone -dif config/doozy_tv/devices_conf_info_tv.conf -clr 1
+
 
 
 

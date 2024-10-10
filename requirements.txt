@@ -7,6 +7,7 @@ opencv-python~=4.10.0.84
 ujson~=5.10.0
 # pytest
 pytest==8.0.2
+pytest-ordering==0.6
 # database
 PyMySQL==1.1.1
 SQLAlchemy==2.0.35

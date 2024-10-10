@@ -1,5 +1,11 @@
-# -*- coding:utf8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/10/10 11:01
+"""
 from page_objects.createElement import CreateElement
 from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
 from page_objects.doozy_tv.locator_type import Locator_Type

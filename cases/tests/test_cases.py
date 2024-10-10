@@ -6,7 +6,7 @@ from common.logger.logTool import logger
 import pytest
 
 
-class TestStartPage:
+class TestCases:
     def setup_class(self):
         """Startpage页面 测试需要重置app"""
         self.demoProjectClient = Android_Project_Client(is_need_kill_app=True)
@@ -25,24 +25,15 @@ class TestStartPage:
 
     @pytest.fixture
     def fixture_test(self):
-        """
-        该函数是一个PyTest测试夹具（fixture），名为fixture_test_silde：
-            执行测试前打印“start......”；
-            使用yield提供fixture对象给测试函数使用；
-            测试完成后，打印“end......”。
-        """
         logger.info('\n......start......')
         yield self.fixture_test
         logger.info('\n...... end ......')
 
-    @pytest.mark.run(order=2)
-    def test_click_allow_btn(self, fixture_test):
-        self.demoProjectClient.appOperator.reset_app()
-        self.startPage.click_allow_btn()
+    @pytest.mark.run(order=3)
+    def test_background_app(self, fixture_test):
+        pass
 
-    @pytest.mark.run(order=1)
-    def test_click_deny_btn(self, fixture_test):
-        self.startPage.click_deny_btn()
+
 
     def teardown_class(self):
         pass
