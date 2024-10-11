@@ -4,7 +4,7 @@
 """
  @author      :  Frankie
  @description :  
- @time        :    14:28
+ @time        :    16:27
 """
 from page_objects.createElement import CreateElement
 from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
@@ -13,41 +13,58 @@ from page_objects.doozy_tv.locator_type import Locator_Type
 
 class LoginPageElements:
     def __init__(self):
-        # tv_notice
-        self.login_notice_id = CreateElement.create(Locator_Type.ID,
-                                                    'com.mm.droid.livetv.stb31023418:id/loada_tv_notice',
-                                                    wait_type=Wait_By.VISIBILITY_OF)
-        self.login_notice_xpath = CreateElement.create(Locator_Type.XPATH,
-                                                       '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.TextView',
-                                                       wait_type=Wait_By.VISIBILITY_OF)
         # login_back_btn
         self.login_back_btn = CreateElement.create(Locator_Type.ID,
                                                    'com.mm.droid.livetv.stb31023418:id/loginf_iv_back',
                                                    wait_type=Wait_By.VISIBILITY_OF)
-
-        # login_welcome_info_container
-        self.login_container = CreateElement.create(Locator_Type.XPATH,
-                                                    '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.LinearLayout[1]',
+        # login_
+        self.login_title = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_welcome',
                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_logo_icon = CreateElement.create(Locator_Type.ID,
-                                                    'com.mm.droid.livetv.stb31023418:id/menu_logo_icon',
+        self.login_doozy_icon = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_iv_title',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_method_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_switch',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_method_email_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_email',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_method_phone_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_phone',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_method_tips_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_account_tip',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_input_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_email_login',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_et_username',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_more_user_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_iv_more_user',
+                                                              wait_type=Wait_By.VISIBILITY_OF)
+        self.login_input_password_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_pwd',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_show_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/pwd_show_state_iv',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_remember_pwd_sl = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/remember_pwd_cb',
+                                                                  wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_remember_pwd_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_register',
+                                                                   wait_type=Wait_By.VISIBILITY_OF)
+        self.login_forget_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_forget_pwd',
+                                                              wait_type=Wait_By.VISIBILITY_OF)
+        self.login_login_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_login',
                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_welcome_title_text = CreateElement.create(Locator_Type.ID,
-                                                             'com.mm.droid.livetv.stb31023418:id/welcomef_tv_welcome',
+        self.login_agreement_show_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/agreement_show',
                                                              wait_type=Wait_By.VISIBILITY_OF)
-        self.login_welcome_tips_text = CreateElement.create(Locator_Type.ID,
-                                                            'com.mm.droid.livetv.stb31023418:id/welcomef_tv_remind',
-                                                            wait_type=Wait_By.VISIBILITY_OF)
+        # tv_notice
+        self.login_notice_id = CreateElement.create(Locator_Type.ID,
+                                                    'com.mm.droid.livetv.stb31023418:id/loada_tv_notice',
+                                                    wait_type=Wait_By.VISIBILITY_OF)
 
-        # login_btn_container
-        self.login_btn_container = CreateElement.create(Locator_Type.XPATH,
-                                                        '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.LinearLayout[2]',
-                                                        wait_type=Wait_By.VISIBILITY_OF)
-        self.login_agreement_show_btn = CreateElement.create(Locator_Type.ID,
-                                                             'com.mm.droid.livetv.stb31023418:id/agreement_show',
-                                                             wait_type=Wait_By.VISIBILITY_OF)
-        self.login_login_with_btn = CreateElement.create(Locator_Type.ID,
-                                                         'com.mm.droid.livetv.stb31023418:id/account_login_tv2',
-                                                         wait_type=Wait_By.VISIBILITY_OF)
-        self.login_sign_up_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/sign_up_tv2',
-                                                      wait_type=Wait_By.VISIBILITY_OF)
+        # account select popup
+        self.login_select_account_popup_title = CreateElement.create(Locator_Type.ID,
+                                                                        'com.mm.droid.livetv.stb31023418:id/loginf_tv_welcome',
+                                                                        wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_account_popup_logo = CreateElement.create(Locator_Type.ID,
+                                                                        'com.mm.droid.livetv.stb31023418:id/loginf_iv_logo',
+                                                                        wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_account_popup_account_container = CreateElement.create(Locator_Type.ID,
+                                                                            'com.mm.droid.livetv.stb31023418:id/userlistdlg_rv_userlist',
+                                                                            wait_type=Wait_By.VISIBILITY_OF)
+        self.login_select_account_popup_first_account_item = CreateElement.create(Locator_Type.XPATH,
+                                                                            '/hierarchy/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.LinearLayout/androidx.recyclerview.widget.RecyclerView/android.widget.LinearLayout[1]/android.widget.TextView',
+                                                                            wait_type=Wait_By.VISIBILITY_OF)
