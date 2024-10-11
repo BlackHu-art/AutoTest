@@ -30,7 +30,7 @@ class TestCases:
         logger.info('\n...... end ......')
 
     @pytest.mark.run(order=3)
-    def test_background_app(self, fixture_test):
+    def test_app(self, fixture_test):
         pass
 
 
