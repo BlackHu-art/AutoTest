@@ -14,9 +14,9 @@ from page_objects.doozy_tv.locator_type import Locator_Type
 class BindInfoPageElements:
     def __init__(self):
         # tv_notice
-        self.tv_notice_id = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tv_notice',
+        self.bind_info_tv_notice_id = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tv_notice',
                                                  wait_type=Wait_By.VISIBILITY_OF)
-        self.tv_notice_xpath = CreateElement.create(Locator_Type.XPATH,
+        self.bind_info_tv_notice_xpath = CreateElement.create(Locator_Type.XPATH,
                                                     '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout/android.widget.TextView',
                                                     wait_type=Wait_By.VISIBILITY_OF)
         # bind_info_container
