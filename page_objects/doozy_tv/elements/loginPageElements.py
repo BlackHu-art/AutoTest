@@ -24,25 +24,15 @@ class LoginPageElements:
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.login_method_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_switch',
                                                      wait_type=Wait_By.VISIBILITY_OF)
-        self.login_method_email_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_email',
+        self.login_tips_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_account_tip',
                                                      wait_type=Wait_By.VISIBILITY_OF)
-        self.login_method_phone_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_phone',
+        self.login_show_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/pwd_show_state_iv',
                                                      wait_type=Wait_By.VISIBILITY_OF)
-        self.login_method_tips_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_account_tip',
-                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_input_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_email_login',
-                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_et_username',
-                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_select_more_user_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_iv_more_user',
+        self.login_user_sel_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_iv_more_user',
                                                               wait_type=Wait_By.VISIBILITY_OF)
-        self.login_input_password_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_pwd',
-                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_select_show_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/pwd_show_state_iv',
-                                                     wait_type=Wait_By.VISIBILITY_OF)
-        self.login_select_remember_pwd_sl = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/remember_pwd_cb',
+        self.login_remember_pwd_sl = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/remember_pwd_cb',
                                                                   wait_type=Wait_By.VISIBILITY_OF)
-        self.login_select_remember_pwd_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_register',
+        self.login_remember_pwd_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_register',
                                                                    wait_type=Wait_By.VISIBILITY_OF)
         self.login_forget_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_forget_pwd',
                                                               wait_type=Wait_By.VISIBILITY_OF)
@@ -50,12 +40,32 @@ class LoginPageElements:
                                                     wait_type=Wait_By.VISIBILITY_OF)
         self.login_agreement_show_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/agreement_show',
                                                              wait_type=Wait_By.VISIBILITY_OF)
+        self.login_input_password_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_pwd',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+
+        # email_login
+        self.login_email_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_email',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_email_input_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_email_login',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_email_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_et_username',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+
+
+        # phone_login
+        self.login_phone_element = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/tabitem_phone',
+                                                     wait_type=Wait_By.VISIBILITY_OF)
+        self.login_phone_spinner_phone_code = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/spinner_phonecode',
+                                                                  wait_type=Wait_By.VISIBILITY_OF)
+        self.login_phone_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_phonenumber',
+                                                                    wait_type=Wait_By.VISIBILITY_OF)
+
         # tv_notice
         self.login_notice_id = CreateElement.create(Locator_Type.ID,
                                                     'com.mm.droid.livetv.stb31023418:id/loada_tv_notice',
                                                     wait_type=Wait_By.VISIBILITY_OF)
 
-        # account select popup
+        # email account select popup
         self.login_select_account_popup_title = CreateElement.create(Locator_Type.ID,
                                                                         'com.mm.droid.livetv.stb31023418:id/loginf_tv_welcome',
                                                                         wait_type=Wait_By.VISIBILITY_OF)
