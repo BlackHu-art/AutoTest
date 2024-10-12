@@ -18,5 +18,5 @@ class StartPageElements:
                                                     wait_type=Wait_By.VISIBILITY_OF)
         self.permission_allow_button = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/permission_allow_button',
                                               wait_type=Wait_By.VISIBILITY_OF)
-        self.permission_deny_button = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/permission_allow_button',
+        self.permission_deny_button = CreateElement.create(Locator_Type.ID, 'com.android.packageinstaller:id/permission_deny_button',
                                                            wait_type=Wait_By.VISIBILITY_OF)
