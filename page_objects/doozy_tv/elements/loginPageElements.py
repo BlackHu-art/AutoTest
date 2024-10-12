@@ -24,7 +24,7 @@ class LoginPageElements:
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.login_method_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_switch',
                                                      wait_type=Wait_By.VISIBILITY_OF)
-        self.login_tips_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_account_tip',
+        self.login_remind_tips_text = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_tv_account_tip',
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.login_show_password_btn = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/pwd_show_state_iv',
                                                      wait_type=Wait_By.VISIBILITY_OF)
@@ -48,7 +48,7 @@ class LoginPageElements:
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.login_email_input_container = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_ll_email_login',
                                                      wait_type=Wait_By.VISIBILITY_OF)
-        self.login_email_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_et_username',
+        self.login_email_input_email_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/loginf_et_username',
                                                      wait_type=Wait_By.VISIBILITY_OF)
 
 
@@ -57,7 +57,7 @@ class LoginPageElements:
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.login_phone_spinner_phone_code = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/spinner_phonecode',
                                                                   wait_type=Wait_By.VISIBILITY_OF)
-        self.login_phone_input_username_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_phonenumber',
+        self.login_phone_input_phone_edit = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/et_phonenumber',
                                                                     wait_type=Wait_By.VISIBILITY_OF)
 
         # tv_notice
