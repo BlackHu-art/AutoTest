@@ -50,3 +50,9 @@ class InfoPageElements:
                                                                  wait_type=Wait_By.VISIBILITY_OF)
         self.info_page_security_level = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/security_level',
                                                              wait_type=Wait_By.VISIBILITY_OF)
+
+        # 点击升级检测pop，没有升级配置
+        self.info_page_check_update_pop_tips = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/upgradesamedlg_tv_tips',
+                                                                        wait_type=Wait_By.VISIBILITY_OF)
+        self.info_page_check_update_pop_icon = CreateElement.create(Locator_Type.ID, 'com.mm.droid.livetv.stb31023418:id/upgradesamedlg_iv_icon',
+                                                                    wait_type=Wait_By.VISIBILITY_OF)
