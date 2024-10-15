@@ -21,7 +21,6 @@ class EmailGenerator:
         self.subfix = subfix
 
     def generate_email_prename(self):
-        """生成随机邮箱名"""
         prename = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(self.length))
         logger.info("随机生成的邮箱名前缀：%s" % prename)
         return prename
@@ -31,6 +30,10 @@ class EmailGenerator:
         random_name = self.prefix + self.generate_email_prename()
         return random_name + "@" + self.subfix
 
+    def get_spilt_email_address(self, prename):
+        email_address = prename + "@" + self.subfix
+        return email_address
+
 
 if __name__ == "__main__":
-    print(EmailGenerator().generate_email_prename())
+    logger.info(EmailGenerator().get_spilt_email_address("frankie"))
