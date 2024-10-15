@@ -190,7 +190,7 @@ class APP_UI_Devices_Info:
 
                 a_devices_desired_capabilities.append(desired_capabilities)
                 # 将desired_capabilities添加到yaml文件
-                YamlTool('config/example.yaml').add(self.devices_desc[i].strip(), desired_capabilities)
+                YamlTool('test_data/doozy_tv/devicesCaps.yaml').add(self.devices_desc[i].strip(), desired_capabilities)
 
             # 更新设备信息中的capabilities
             device_info.update({'capabilities': a_devices_desired_capabilities})

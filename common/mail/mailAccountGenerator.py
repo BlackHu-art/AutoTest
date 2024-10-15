@@ -8,6 +8,8 @@
 """
 import random
 import string
+from common.yamlTool import YamlTool
+from common.logger.logTool import logger
 
 
 class EmailGenerator:
@@ -18,16 +20,17 @@ class EmailGenerator:
         self.prefix = prefix
         self.subfix = subfix
 
-    def generate_random_name(self):
+    def generate_email_prename(self):
         """生成随机邮箱名"""
-        return "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(self.length))
+        prename = "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(self.length))
+        logger.info("随机生成的邮箱名前缀：%s" % prename)
+        return prename
 
     def get_email_address(self):
         """返回完整的邮箱地址"""
-        random_name = self.prefix + self.generate_random_name()
+        random_name = self.prefix + self.generate_email_prename()
         return random_name + "@" + self.subfix
 
 
 if __name__ == "__main__":
-    print(EmailGenerator().get_email_address())
-    print(EmailGenerator().generate_random_name())
+    print(EmailGenerator().generate_email_prename())
