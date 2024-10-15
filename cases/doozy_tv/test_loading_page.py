@@ -27,6 +27,5 @@ class TestLoadingPage:
     def test_restart_app(self, fixture_test):
         self.loadingPage.found_loading_container()
 
-
     def teardown_class(self):
         pass

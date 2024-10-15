@@ -20,8 +20,14 @@ class LoadingPage:
 
     def found_loading_container(self):
         self._appOperator.launch_app()
-        self._appOperator.is_displayed(self._loadingPageElements.loading_container)
-        self._appOperator.get_screenshot('loading_container')
+        if self._appOperator.is_displayed(self._loadingPageElements.loading_container):
+            logger.info('loading_container is displayed !')
+            self._remoteControl.press_right()
+            logger.info('press_right to skip ad !')
+            time.sleep(10)
+            self._appOperator.get_screenshot('loading_container')
+        else:
+            logger.warning('loading AD container is not displayed !')
 
     def getElements(self):
         return self._loadingPageElements

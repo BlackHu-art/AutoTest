@@ -1,11 +1,18 @@
-# -*- coding:utf-8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/10/15 16:53
+"""
 from base.app_ui.android_Project_read_config import APP_UI_Android_DemoProject_Read_Config
 from appium import webdriver
 from base.read_app_ui_config import Read_APP_UI_Config
 from common.appium.appOperator import AppOperator
 from common.fileTool import FileTool
 from common.httpclient.doRequest import DoRequest
+from common.logger.logTool import logger
 from init.app_ui.android.demoProject.demoProjectInit import DemoProjectInit
 import os
 
@@ -46,7 +53,9 @@ class Android_Project_Client(object):
         elif is_need_kill_app:
             # appium启动是非重置或者非第一次appium启动，则要进行重启进程
             if self.__is_first == False or self.noReset == True:
-                self.appOperator.start_activity(self.device_info['appPackage'], self.device_info['appActivity'])
+                appPackage = self.current_desired_capabilities['appPackage']
+                appActivity = self.current_desired_capabilities['appActivity']
+                self.appOperator.start_activity(appPackage, appActivity)
 
         self.__is_first = False
 
