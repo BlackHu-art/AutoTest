@@ -27,9 +27,12 @@ class Android_Project_Client(object):
         return cls.__instance
 
     def __init__(self, is_need_reset_app=False, is_need_kill_app=False):
+        """在首次调用时初始化"""
         if self.__inited is None:
+            # 标记为已初始化，确保只初始化一次
             self.__inited = True
             self.__is_first = True
+            # 读取配置
             self.config = Read_APP_UI_Config().app_ui_config
             self.device_info = FileTool.readJsonFromFile('config/app_ui_tmp/' + str(os.getppid()))
             self.demoProject_config = APP_UI_Android_DemoProject_Read_Config(
@@ -49,12 +52,14 @@ class Android_Project_Client(object):
         if is_need_reset_app:
             # appium启动是非重置或者非第一次appium启动，则要进行重置
             if self.__is_first == False or self.noReset == True:
+                logger.warning('is_need_reset_app is True, reset app')
                 self.appOperator.reset_app()
         elif is_need_kill_app:
             # appium启动是非重置或者非第一次appium启动，则要进行重启进程
             if self.__is_first == False or self.noReset == True:
                 appPackage = self.current_desired_capabilities['appPackage']
                 appActivity = self.current_desired_capabilities['appActivity']
+                logger.warning('is_need_kill_app is True, restart app')
                 self.appOperator.start_activity(appPackage, appActivity)
 
         self.__is_first = False

@@ -18,13 +18,9 @@ class LoadingPage:
         self._remoteControl = RemoteControlActions(self._appOperator.getDriver())
         self._loadingPageElements = LoadingPageElements()
 
-    def found_loading_container(self):
-        self._appOperator.launch_app()
+    def test_start_up_loading_page(self):
         if self._appOperator.is_displayed(self._loadingPageElements.loading_container):
             logger.info('loading_container is displayed !')
-            self._remoteControl.press_right()
-            logger.info('press_right to skip ad !')
-            time.sleep(10)
             self._appOperator.get_screenshot('loading_container')
         else:
             logger.warning('loading AD container is not displayed !')

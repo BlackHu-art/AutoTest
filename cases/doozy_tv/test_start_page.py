@@ -1,5 +1,11 @@
-# -*- coding:utf8 -*-
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
+"""
+ @author      :  Frankie
+ @description :
+ @time        :  2024/10/16 13:45
+"""
 from base.app_ui.android_Project_client import Android_Project_Client
 from page_objects.doozy_tv.pages.startPage import StartPage
 from common.logger.logTool import logger
@@ -8,9 +14,11 @@ import pytest
 
 class TestStartPage:
     def setup_class(self):
-        """Startpage页面 测试需要重置app"""
-        self.demoProjectClient = Android_Project_Client(is_need_kill_app=True)
+        """在测试类级别初始化Android_Project_Client，只运行一次"""
+        self.demoProjectClient = Android_Project_Client()
         self.startPage = StartPage(self.demoProjectClient.appOperator)
+        self.appOperator = self.demoProjectClient.appOperator
+
 
     """该函数为一个Pytest fixture，自动用于每个测试用例"""
 
@@ -37,12 +45,15 @@ class TestStartPage:
 
     @pytest.mark.run(order=2)
     def test_click_allow_btn(self, fixture_test):
-        self.demoProjectClient.appOperator.reset_app()
+        self.appOperator.reset_app()
         self.startPage.click_allow_btn()
 
     @pytest.mark.run(order=1)
     def test_click_deny_btn(self, fixture_test):
+        self.appOperator.reset_app()
         self.startPage.click_deny_btn()
 
     def teardown_class(self):
-        pass
+        """在测试类结束时执行的清理工作"""
+        logger.info('TestStartPage 用例执行结束，不关闭应用以保留状态')
+        pass  # 如果你不需要关闭应用，保持应用的状态

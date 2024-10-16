@@ -9,4 +9,4 @@ B11_132:
   app: http://10.0.0.126:8000/packages/doozy_tv/DoozyTV_2.1.3_20240717_stb.apk
   noSign: true
   fullReset: false
-  noReset: false
+  noReset: true
