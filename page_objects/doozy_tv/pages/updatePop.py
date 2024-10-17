@@ -4,15 +4,15 @@
 """
  @author      :  Frankie
  @description :  
- @time        :    16:26
+ @time        :    17:04
 """
 from common.logger.logTool import logger
 from common.appium.remoteControlActions import RemoteControlActions
-from page_objects.doozy_tv.elements.loginPageElements import LoginPageElements
+from page_objects.doozy_tv.elements.updatePopElements import UpdateElements
 
 
-class LoginPage:
+class UpdatePop:
     def __init__(self, _appOperator):
         self._appOperator = _appOperator
         self._remoteControl = RemoteControlActions(self._appOperator.getDriver())
-        self.loginPageElements = LoginPageElements()
+        self._updateElements = UpdateElements()

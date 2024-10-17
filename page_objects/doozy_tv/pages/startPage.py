@@ -27,8 +27,8 @@ class StartPage:
 
     def click_allow_btn(self):
         self.is_allow_container_displayed()
-        self._remoteControl.press_down()
-        self._remoteControl.press_right()
+        # self._remoteControl.press_down()
+        # self._remoteControl.press_right()
         if self._appOperator.is_displayed(self._startPageElements.permission_allow_button):
             self._remoteControl.press_ok()
             logger.info('touch_tap permission_allow_button')
@@ -36,7 +36,7 @@ class StartPage:
 
     def click_deny_btn(self):
         self.is_allow_container_displayed()
-        self._remoteControl.press_down()
+        # self._remoteControl.press_down()
         if self._appOperator.is_displayed(self._startPageElements.permission_deny_button):
             self._remoteControl.press_ok()
             logger.info('touch_tap permission_deny_button')
