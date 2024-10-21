@@ -11,10 +11,13 @@ from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
 from common.dateTimeTool import DateTimeTool
 from common.httpclient.doRequest import DoRequest
+from common.logger.logTool import logger
 from page_objects.createElement import CreateElement
 from page_objects.doozy_tv.locator_type import Locator_Type
 from page_objects.doozy_tv.wait_type import Wait_Type as Wait_By
@@ -265,6 +268,105 @@ class AppOperator:
                 return self._driver.execute_script(script, script_arg)
         elif 'ios' == platformName.lower():
             return False
+
+    def is_text_exist(self, text: str, wait_seconds: int = 3) -> bool:
+        """
+        判断text是否于当前页面存在
+        """
+        try:
+            # 使用WebDriverWait等待元素出现
+            element = WebDriverWait(self._driver, wait_seconds).until(
+                EC.presence_of_element_located((By.XPATH, f"//*[contains(text(), '{text}')]"))
+            )
+            return True
+        except TimeoutException:
+            return False
+
+    def move_cursor_to_element(self, target_element_locator, max_attempts=30, timeout=10):
+        """
+        移动光标到指定元素。依据当前光标对目标元素的位置来计算下一步点击移动的方向，确保光标移动到目标位置。
+
+        :param target_element_locator: 定位目标元素的 locator (如 AppiumBy.ID 或 AppiumBy.XPATH 等)
+        :param max_attempts: 最大按键尝试次数，防止无限循环
+        :param timeout: 每次按键后的最大等待时间，用于等待页面响应
+        :return: True 表示成功移动到目标元素，False 表示未能找到目标元素
+        """
+        attempts = 0
+
+        while attempts < max_attempts:
+            try:
+                # 等待目标元素可见
+                target_element = WebDriverWait(self._driver, timeout).until(
+                    EC.presence_of_element_located(target_element_locator)
+                )
+                current_element = self._driver.switch_to.active_element
+                current_rect = current_element.rect
+                target_rect = target_element.rect
+
+                # 获取当前光标和目标元素的中心点坐标
+                current_center = {
+                    'x': current_rect['x'] + current_rect['width'] / 2,
+                    'y': current_rect['y'] + current_rect['height'] / 2
+                }
+                target_center = {
+                    'x': target_rect['x'] + target_rect['width'] / 2,
+                    'y': target_rect['y'] + target_rect['height'] / 2
+                }
+
+                # 计算水平和垂直方向的差距
+                horizontal_diff = target_center['x'] - current_center['x']
+                vertical_diff = target_center['y'] - current_center['y']
+
+                # 优先移动差距较大的方向
+                if abs(vertical_diff) > abs(horizontal_diff):
+                    if vertical_diff > 0:
+                        direction = 'down'
+                    else:
+                        direction = 'up'
+                elif abs(horizontal_diff) > 0:
+                    if horizontal_diff > 0:
+                        direction = 'right'
+                    else:
+                        direction = 'left'
+                else:
+                    # 如果差距为 0，说明已经在目标元素上
+                    logger.info(f"光标已成功移动到目标元素: {target_element_locator}")
+                    return True
+
+                # 按下对应方向的键
+                self._press_directional_key(direction)
+                attempts += 1
+
+            except TimeoutException:
+                logger.warning(f"目标元素未出现，继续尝试... {attempts + 1}/{max_attempts}")
+                attempts += 1
+            except StaleElementReferenceException:
+                logger.warning("元素发生变化，可能已被更新或消失，重新获取当前和目标元素")
+            except Exception as e:
+                logger.error(f"发生未知错误: {e}")
+                break
+
+        logger.warning(f"未能在 {max_attempts} 次尝试中找到目标元素")
+        return False
+
+    def _press_directional_key(self, direction):
+        """
+        模拟方向键按下，支持上下左右方向键。
+
+        :param direction: 'up', 'down', 'left', 'right'
+        """
+        key_codes = {
+            'up': 19,  # Android KeyEvent.KEYCODE_DPAD_UP
+            'down': 20,  # Android KeyEvent.KEYCODE_DPAD_DOWN
+            'left': 21,  # Android KeyEvent.KEYCODE_DPAD_LEFT
+            'right': 22  # Android KeyEvent.KEYCODE_DPAD_RIGHT
+        }
+
+        if direction in key_codes:
+            logger.info(f"按下方向键: {direction}")
+            self._driver.press_keycode(key_codes[direction])
+        else:
+            logger.error(f"未知的方向键: {direction}")
 
     def get_geolocation(self):
         """
