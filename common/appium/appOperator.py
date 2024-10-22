@@ -15,6 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementNotInteractableException
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
+from common.appium.remoteControlActions import RemoteControlActions
 from common.dateTimeTool import DateTimeTool
 from common.httpclient.doRequest import DoRequest
 from common.logger.logTool import logger
@@ -41,6 +42,7 @@ class AppOperator:
         self._doRequest.setHeaders({'Content-Type': 'application/json'})
         self._driver = driver
         self._session_id = driver.session_id
+        self._remoteControl = RemoteControlActions(self._driver)
         # 获得设备支持的性能数据类型
         self._performance_types = ujson.loads(
             self._doRequest.post_with_form('/session/' + self._session_id + '/appium/performanceData/types').body)[
@@ -292,7 +294,7 @@ class AppOperator:
             current_element = self._get_current_focused_element()
             if not current_element:
                 # 尝试按下一次 DOWN 键
-                self._press_key('DOWN')
+                self._remoteControl.press_down()
                 # 再次尝试获取当前焦点元素
                 current_element = self._get_current_focused_element()
                 if not current_element:
@@ -369,14 +371,14 @@ class AppOperator:
             while abs(vertical_diff) > 0 or abs(horizontal_diff) > 0:
                 if abs(vertical_diff) > abs(horizontal_diff):
                     if vertical_diff > 0:
-                        self._press_key('DOWN')
+                        self._remoteControl.press_down()
                     else:
-                        self._press_key('UP')
+                        self._remoteControl.press_up()
                 else:
                     if horizontal_diff > 0:
-                        self._press_key('RIGHT')
+                        self._remoteControl.press_right()
                     else:
-                        self._press_key('LEFT')
+                        self._remoteControl.press_left()
 
                 current_element = self._get_current_focused_element()
                 if not current_element:
@@ -390,27 +392,6 @@ class AppOperator:
         except Exception as e:
             logger.error(f"移动光标时发生错误: {e}")
             raise e
-
-    def _press_key(self, direction):
-        """模拟方向键按键"""
-        key_code_map = {
-            'UP': 19,
-            'DOWN': 20,
-            'LEFT': 21,
-            'RIGHT': 22
-        }
-
-        key_code = key_code_map.get(direction)
-        if key_code:
-            if hasattr(self._driver, 'press_keycode'):
-                self._driver.press_keycode(key_code)
-                logger.info(f"按下方向键: {direction}")
-            else:
-                logger.warning("驱动不支持 press_keycode 方法")
-                raise NotImplementedError("驱动不支持 press_keycode 方法")
-        else:
-            logger.error(f"无效的方向键: {direction}")
-            raise ValueError(f"无效的方向键: {direction}")
 
     def get_geolocation(self):
         """
