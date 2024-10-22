@@ -6,13 +6,13 @@
  @description :
  @time        :  2024/10/8 16:53
 """
-
+from appium.webdriver.common.mobileby import MobileBy
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementNotInteractableException
 from appium.webdriver.webdriver import WebDriver
 from appium.webdriver.webelement import WebElement
 from common.dateTimeTool import DateTimeTool
@@ -282,91 +282,135 @@ class AppOperator:
         except TimeoutException:
             return False
 
-    def move_cursor_to_element(self, target_element_locator, max_attempts=30, timeout=10):
-        """
-        移动光标到指定元素。依据当前光标对目标元素的位置来计算下一步点击移动的方向，确保光标移动到目标位置。
+    def move_cursor_to_element(self, element):
+        try:
+            # 获取目标元素的定位信息
+            target_element = self._change_element_to_webElement_type(element)
+            logger.info(f"目标元素: {target_element}")
 
-        :param target_element_locator: 定位目标元素的 locator (如 AppiumBy.ID 或 AppiumBy.XPATH 等)
-        :param max_attempts: 最大按键尝试次数，防止无限循环
-        :param timeout: 每次按键后的最大等待时间，用于等待页面响应
-        :return: True 表示成功移动到目标元素，False 表示未能找到目标元素
-        """
-        attempts = 0
+            # 获取当前焦点元素
+            current_element = self._get_current_focused_element()
+            if not current_element:
+                # 尝试按下一次 DOWN 键
+                self._press_key('DOWN')
+                # 再次尝试获取当前焦点元素
+                current_element = self._get_current_focused_element()
+                if not current_element:
+                    # 如果仍然无法获取焦点，尝试将焦点设置到一个已知的元素
+                    self._focus_on_default_element()
+                    current_element = self._get_current_focused_element()
+                    if not current_element:
+                        raise Exception("无法获取当前焦点的元素，焦点可能不在当前页面")
 
-        while attempts < max_attempts:
-            try:
-                # 等待目标元素可见
-                target_element = WebDriverWait(self._driver, timeout).until(
-                    EC.presence_of_element_located(target_element_locator)
-                )
-                current_element = self._driver.switch_to.active_element
-                current_rect = current_element.rect
-                target_rect = target_element.rect
+            # 获取当前光标元素的坐标
+            current_location = current_element.location
+            target_location = target_element.location
 
-                # 获取当前光标和目标元素的中心点坐标
-                current_center = {
-                    'x': current_rect['x'] + current_rect['width'] / 2,
-                    'y': current_rect['y'] + current_rect['height'] / 2
-                }
-                target_center = {
-                    'x': target_rect['x'] + target_rect['width'] / 2,
-                    'y': target_rect['y'] + target_rect['height'] / 2
-                }
+            # 自动计算最短路径并移动光标
+            logger.info(f"当前光标位置: {current_location}")
+            logger.info(f"目标元素位置: {target_location}")
 
-                # 计算水平和垂直方向的差距
-                horizontal_diff = target_center['x'] - current_center['x']
-                vertical_diff = target_center['y'] - current_center['y']
+            self._move_cursor(current_location, target_location)
 
-                # 优先移动差距较大的方向
+        except Exception as e:
+            logger.error(f"移动光标时发生错误: {e}")
+            raise e
+
+    def _get_current_focused_element(self):
+        """获取当前焦点所在的元素"""
+        try:
+            focused_element = self._driver.switch_to.active_element
+            logger.info("成功获取当前焦点元素")
+            return focused_element
+        except NoSuchElementException as e:
+            logger.warning("获取当前焦点元素失败，可能焦点不在当前页面")
+            return None
+        except Exception as e:
+            logger.error(f"获取当前焦点元素时发生错误: {e}")
+            return None
+
+    def _focus_on_default_element(self):
+        """将焦点设置到页面上的一个已知元素"""
+        try:
+            # 查找所有可点击的元素
+            clickable_elements = self._driver.find_elements(MobileBy.XPATH, "//*[@clickable='true']")
+
+            if clickable_elements:
+                default_element = clickable_elements[0]
+                if hasattr(self._driver, 'execute_script'):
+                    self._driver.execute_script("arguments[0].focus();", default_element)
+                    logger.info("成功将焦点移动到默认元素")
+                else:
+                    logger.warning("驱动不支持 execute_script 方法")
+                    raise NotImplementedError("驱动不支持 execute_script 方法")
+            else:
+                logger.warning("无法找到可点击的默认焦点元素")
+                raise NoSuchElementException("无法找到可点击的默认焦点元素")
+        except NoSuchElementException:
+            logger.error("无法找到可点击的默认焦点元素")
+            raise NoSuchElementException("无法找到可点击的默认焦点元素")
+        except ElementNotInteractableException:
+            logger.error("默认焦点元素不可交互")
+            raise ElementNotInteractableException("默认焦点元素不可交互")
+        except TimeoutException:
+            logger.error("查找默认焦点元素超时")
+            raise TimeoutException("查找默认焦点元素超时")
+        except Exception as e:
+            logger.error(f"设置默认焦点元素失败: {e}")
+            raise e
+
+    def _move_cursor(self, current_location, target_location):
+        """根据当前位置和目标位置计算移动路径并执行"""
+        try:
+            vertical_diff = target_location['y'] - current_location['y']
+            horizontal_diff = target_location['x'] - current_location['x']
+
+            # 根据差值计算移动方向
+            while abs(vertical_diff) > 0 or abs(horizontal_diff) > 0:
                 if abs(vertical_diff) > abs(horizontal_diff):
                     if vertical_diff > 0:
-                        direction = 'down'
+                        self._press_key('DOWN')
                     else:
-                        direction = 'up'
-                elif abs(horizontal_diff) > 0:
-                    if horizontal_diff > 0:
-                        direction = 'right'
-                    else:
-                        direction = 'left'
+                        self._press_key('UP')
                 else:
-                    # 如果差距为 0，说明已经在目标元素上
-                    logger.info(f"光标已成功移动到目标元素: {target_element_locator}")
-                    return True
+                    if horizontal_diff > 0:
+                        self._press_key('RIGHT')
+                    else:
+                        self._press_key('LEFT')
 
-                # 按下对应方向的键
-                self._press_directional_key(direction)
-                attempts += 1
+                current_element = self._get_current_focused_element()
+                if not current_element:
+                    raise Exception("无法获取当前焦点的元素，焦点可能不在当前页面")
 
-            except TimeoutException:
-                logger.warning(f"目标元素未出现，继续尝试... {attempts + 1}/{max_attempts}")
-                attempts += 1
-            except StaleElementReferenceException:
-                logger.warning("元素发生变化，可能已被更新或消失，重新获取当前和目标元素")
-            except Exception as e:
-                logger.error(f"发生未知错误: {e}")
-                break
+                current_location = current_element.location
+                vertical_diff = target_location['y'] - current_location['y']
+                horizontal_diff = target_location['x'] - current_location['x']
 
-        logger.warning(f"未能在 {max_attempts} 次尝试中找到目标元素")
-        return False
+            logger.info("光标成功移动到目标元素")
+        except Exception as e:
+            logger.error(f"移动光标时发生错误: {e}")
+            raise e
 
-    def _press_directional_key(self, direction):
-        """
-        模拟方向键按下，支持上下左右方向键。
-
-        :param direction: 'up', 'down', 'left', 'right'
-        """
-        key_codes = {
-            'up': 19,  # Android KeyEvent.KEYCODE_DPAD_UP
-            'down': 20,  # Android KeyEvent.KEYCODE_DPAD_DOWN
-            'left': 21,  # Android KeyEvent.KEYCODE_DPAD_LEFT
-            'right': 22  # Android KeyEvent.KEYCODE_DPAD_RIGHT
+    def _press_key(self, direction):
+        """模拟方向键按键"""
+        key_code_map = {
+            'UP': 19,
+            'DOWN': 20,
+            'LEFT': 21,
+            'RIGHT': 22
         }
 
-        if direction in key_codes:
-            logger.info(f"按下方向键: {direction}")
-            self._driver.press_keycode(key_codes[direction])
+        key_code = key_code_map.get(direction)
+        if key_code:
+            if hasattr(self._driver, 'press_keycode'):
+                self._driver.press_keycode(key_code)
+                logger.info(f"按下方向键: {direction}")
+            else:
+                logger.warning("驱动不支持 press_keycode 方法")
+                raise NotImplementedError("驱动不支持 press_keycode 方法")
         else:
-            logger.error(f"未知的方向键: {direction}")
+            logger.error(f"无效的方向键: {direction}")
+            raise ValueError(f"无效的方向键: {direction}")
 
     def get_geolocation(self):
         """

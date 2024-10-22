@@ -30,6 +30,9 @@ class StartPage:
         # self._remoteControl.press_down()
         # self._remoteControl.press_right()
         if self._appOperator.is_displayed(self._startPageElements.permission_allow_button):
+            self._appOperator.move_cursor_to_element(self._startPageElements.permission_allow_button)
+            logger.info('move_cursor_to_element permission_allow_button')
+            # if self._appOperator.selected(self._startPageElements.permission_allow_button):
             self._appOperator.touch_tap(self._startPageElements.permission_allow_button)
             logger.info('touch_tap permission_allow_button')
             self._appOperator.get_screenshot('after_click_allow_btn')
@@ -38,6 +41,7 @@ class StartPage:
         self.is_allow_container_displayed()
         # self._remoteControl.press_down()
         if self._appOperator.is_displayed(self._startPageElements.permission_deny_button):
+            self._appOperator.move_cursor_to_element(self._startPageElements.permission_deny_button)
             self._appOperator.touch_tap(self._startPageElements.permission_deny_button)
             logger.info('touch_tap permission_deny_button')
             self._appOperator.get_screenshot('after_click_deny_btn')
