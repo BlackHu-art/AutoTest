@@ -96,7 +96,7 @@ class CPFGenerator:
                         logger.warning(f"Skipped entry {index} due to invalid CPF")
 
             # 线程任务全部完成后，写入文件
-            with open(filename, "w") as file:
+            with open(filename, "a") as file:
                 for entry in entries:
                     file.write(entry + "\n")
             logger.info(f"Generated document saved to {filename} at: {os.path.abspath(filename)}")
