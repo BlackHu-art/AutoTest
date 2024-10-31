@@ -6,7 +6,9 @@
  @description :  生成巴西国家地区的CPF请求头可能会失效，需要更新
  @time        :    9:38
 """
+import random
 import re
+import string
 
 import requests
 import time
@@ -56,7 +58,7 @@ class CPFGenerator:
             except requests.RequestException as e:
                 logger.error(f"Request failed: {e}")
                 responses.append(f"Request failed: {e}")
-            time.sleep(1)  # Adding delay of 1 second between requests
+            # time.sleep(1)  # Adding delay of 1 second between requests
         return responses
 
     def save_to_file(self, data, filename="cpf_results.txt"):
@@ -70,8 +72,48 @@ class CPFGenerator:
             logger.error(f"File write error: {e}")
 
 
-# 调用示例
+class DataGenerator:
+    def __init__(self, num_entries):
+        self.num_entries = num_entries
+        self.cpf_generator = CPFGenerator()
+
+    def _generate_random_username(self):
+        # 生成一个10位随机字符串作为用户名
+        return ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
+
+    def generate_data(self):
+        data_entries = []
+        cpfs = self.cpf_generator.generate_cpfs(self.num_entries)  # 获取生成的 CPF 列表
+        for i in range(self.num_entries):
+            name = "TESTEDOOZY"
+            cpf = cpfs[i] if i < len(cpfs) else "00000000000"  # 若未生成 CPF，用默认值替代
+            email = f"{self._generate_random_username()}@ipwangxin.cn"
+            first_name = "Nome"
+            last_name = "Sobrenome"
+            entry = f"{name};{cpf};{email};{first_name};{last_name}"
+            data_entries.append(entry)
+        return data_entries
+
+    def save_to_file(self, filename="generated_data.txt"):
+        data_entries = self.generate_data()
+        try:
+            with open(filename, 'w') as file:
+                for entry in data_entries:
+                    file.write(entry + "\n")
+            logger.info(f"Results saved to {filename}")
+        except IOError as e:
+            logger.error(f"File write error: {e}")
+
+
+# 使用示例
 if __name__ == "__main__":
-    generator = CPFGenerator()
-    cpf_data = generator.generate_cpfs(number=1000)  # 生成5个CPF
-    generator.save_to_file(cpf_data, filename="cpf_results.txt")
+    # num_entries = 5  # 指定生成的数据条数
+    generator = DataGenerator(num_entries=50000)
+    generator.save_to_file()
+
+#
+# # 调用示例
+# if __name__ == "__main__":
+#     generator = CPFGenerator()
+#     cpf_data = generator.generate_cpfs(number=1000)  # 生成5个CPF
+#     generator.save_to_file(cpf_data, filename="cpf_results.txt")
