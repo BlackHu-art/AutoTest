@@ -9,10 +9,10 @@
 import os
 import random
 import string
+from datetime import datetime
 
 import requests
 import re
-import time
 from common.logger.logTool import logger
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
@@ -38,8 +38,9 @@ class CPFGenerator:
         self.max_threads = max_threads
         self.lock = threading.Lock()  # 文件写入锁
 
-    def generate_cpfs(self, number=1, filename="cpf_results.txt"):
+    def generate_cpfs(self, number=1):
         """Generate multiple CPF numbers concurrently and save each to file as it is generated."""
+        filename = f"cpf_results_{datetime.now().strftime('%Y%m%d')}.txt"
         with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
             futures = [executor.submit(self._request_and_save_cpf, filename) for _ in range(number)]
             for future in as_completed(futures):
@@ -50,19 +51,20 @@ class CPFGenerator:
         cpf = self.generate_single_cpf()
         self.save_line_to_file(cpf, filename)
 
-    def generate_single_cpf(self, index):
+    def generate_single_cpf(self, index=None):
         """Generate and return a single CPF number if successful, or None if failed."""
         try:
             response = requests.post(self.url, headers=self.headers, data=self.payload)
             if response.status_code == 200:
                 cpf = re.sub(r"\D", "", response.text)  # Remove all non-digit characters
-                logger.info(f"Generated CPF {index}: {cpf}")
+                logger.info(f"Generated CPF {index}: {cpf}" if index else f"Generated CPF: {cpf}")
                 return cpf
             else:
                 logger.error(f"Error {response.status_code} - Failed to generate CPF {index}")
                 return None
         except requests.RequestException as e:
             logger.error(f"Request failed for CPF {index}: {e}")
+            return None
 
     def save_line_to_file(self, data, filename):
         """Thread-safe method to save a single line of data to the specified file."""
@@ -79,12 +81,15 @@ class CPFGenerator:
         username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
         return f"{username}@ipwangxin.cn"
 
-    def generate_document(self, num_entries, filename="generated_document.txt"):
-        """Generate a document with specified number of valid entries."""
+    def generate_document(self, num_entries):
+        """Generate a document with specified number of valid entries, using a unique filename."""
+        timestamp = datetime.now().strftime("%H%M%S")
+        filename = f"generated_{timestamp}.txt"
         entries = []
+
         try:
             with ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-                futures = {executor.submit(self.generate_single_cpf, i+1): i+1 for i in range(num_entries)}
+                futures = {executor.submit(self.generate_single_cpf, i + 1): i + 1 for i in range(num_entries)}
                 for future in as_completed(futures):
                     index = futures[future]
                     cpf = future.result()
@@ -95,8 +100,8 @@ class CPFGenerator:
                     else:
                         logger.warning(f"Skipped entry {index} due to invalid CPF")
 
-            # 线程任务全部完成后，写入文件
-            with open(filename, "a") as file:
+            # 线程任务全部完成后，以写模式创建新文件
+            with open(filename, "w") as file:  # 使用 "w" 模式创建新文件
                 for entry in entries:
                     file.write(entry + "\n")
             logger.info(f"Generated document saved to {filename} at: {os.path.abspath(filename)}")
@@ -104,16 +109,13 @@ class CPFGenerator:
         except Exception as e:
             logger.error(f"Error during document generation: {e}")
         finally:
-            # 确保在程序中断时执行资源清理
             logger.info("All CPF generation tasks completed.")
 
 
 # 使用示例
 if __name__ == "__main__":
     cpf_generator = CPFGenerator(max_threads=50)
-
-    # 生成带有指定数量条目的文档
-    cpf_generator.generate_document(num_entries=200)
+    cpf_generator.generate_document(num_entries=400)
 
 
 
