@@ -88,7 +88,7 @@ class Logger:
             loguru_logger.add(
                 sys.stderr,
                 format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level:<8}</level> | "
-                       "{thread.name} | <cyan>{module:<10}</cyan>.<cyan>{function:<10}</cyan>:<cyan>{line:<5}</cyan> | "
+                       "{thread.name:<20} | <cyan>{module:<10}</cyan>.<cyan>{function:<10}</cyan>:<cyan>{line:<3}</cyan> | "
                        "<level>{message}</level>",
                 level=get_level('StderrLog'),
             )
@@ -121,6 +121,10 @@ logger = Logger().get_logger
 
 if __name__ == '__main__':
     logger.debug('this is a debug message')
+    logger.info('this is an info message')
+    logger.info('this is an info message')
+    logger.info('this is an info message')
+    logger.info('this is an info message')
     logger.info('this is an info message')
     logger.warning('this is a warning message')
     logger.error('this is an error message')
