@@ -56,7 +56,8 @@ class CPFGenerator:
         try:
             response = requests.post(self.url, headers=self.headers, data=self.payload)
             if response.status_code == 200:
-                cpf = re.sub(r"\D", "", response.text)  # Remove all non-digit characters
+                # cpf = re.sub(r"\D", "", response.text)  # Remove all non-digit characters
+                cpf = response.text
                 logger.info(f"Generated CPF {index}: {cpf}" if index else f"Generated CPF: {cpf}")
                 return cpf
             else:
@@ -114,8 +115,8 @@ class CPFGenerator:
 
 # 使用示例
 if __name__ == "__main__":
-    cpf_generator = CPFGenerator(max_threads=50)
-    cpf_generator.generate_document(num_entries=15000)
+    cpf_generator = CPFGenerator(max_threads=5)
+    cpf_generator.generate_document(num_entries=50)
 
 
 
