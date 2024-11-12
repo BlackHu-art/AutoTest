@@ -510,14 +510,16 @@ class ADBManager(wx.Frame):
 
         no_active_activity_devices = []
         error_devices = []
+        no_resumed_activity_devices = []
 
         # 依次获取每个选中设备的当前 Activity 信息
         for index in selected_device_indices:
             device_name = self.listbox_devices.GetString(index)
             adb_command = ["adb", "-s", device_name, "shell", "dumpsys", "window", "|", "grep", "mCurrentFocus"]
+            resumed_activity_command = ["adb", "-s", device_name, "shell", "dumpsys", "activity", "activities", "|", "grep", "mResumedActivity"]
 
             try:
-                # 执行 adb 命令
+                # 执行 adb 命令获取当前 Activity
                 result = subprocess.run(adb_command, shell=False, capture_output=True, encoding="utf-8",
                                         creationflags=subprocess.CREATE_NO_WINDOW)
 
@@ -525,12 +527,28 @@ class ADBManager(wx.Frame):
                     # 获取并格式化输出的 Activity 信息
                     activity_info = result.stdout.strip()
                     if activity_info:
-                        self.log_message("INFO", f"Device: {device_name} - Current Activity: {activity_info}")
+                        self.log_message("INFO", f"Current Activity: \n{activity_info}\n")
                     else:
                         no_active_activity_devices.append(device_name)
                 else:
                     # 记录错误信息
                     error_devices.append((device_name, result.stderr.strip()))
+
+                # 执行 adb 命令获取启动 Activity
+                resumed_result = subprocess.run(resumed_activity_command, shell=False, capture_output=True, encoding="utf-8",
+                                                creationflags=subprocess.CREATE_NO_WINDOW)
+
+                if resumed_result.returncode == 0:
+                    # 获取并格式化输出的启动 Activity 信息
+                    resumed_activity_info = resumed_result.stdout.strip()
+                    if resumed_activity_info:
+                        self.log_message("INFO", f"Resumed Activity: \n{resumed_activity_info}\n")
+                    else:
+                        no_resumed_activity_devices.append(device_name)
+                else:
+                    # 记录错误信息
+                    error_devices.append((device_name, resumed_result.stderr.strip()))
+
             except subprocess.CalledProcessError as e:
                 error_devices.append((device_name, str(e)))
             except OSError as e:
@@ -541,9 +559,11 @@ class ADBManager(wx.Frame):
         if no_active_activity_devices:
             self.log_message("WARNING", f"No active Activity found on devices: {', '.join(no_active_activity_devices)}")
 
-        for device_name, error_msg in error_devices:
-            self.log_message("ERROR", f"Device: {device_name} - Failed to retrieve current Activity: {error_msg}")
+        if no_resumed_activity_devices:
+            self.log_message("WARNING", f"No resumed Activity found on devices: {', '.join(no_resumed_activity_devices)}")
 
+        for device_name, error_msg in error_devices:
+            self.log_message("ERROR", f"Device: {device_name} - Failed to retrieve current or resumed Activity: {error_msg}")
     def on_select_apk(self, event):
         # 弹出文件选择框
         with wx.FileDialog(self, "Select APK File", wildcard="APK files (*.apk)|*.apk",
