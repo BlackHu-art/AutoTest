@@ -130,6 +130,15 @@ class ADBManager(wx.Frame):
         self.btn_restart_app.Bind(wx.EVT_BUTTON, self.on_restart_app)
         row0_sizer.Add(self.btn_restart_app, 1, wx.ALL, 5)
 
+        self.btn_activity = wx.Button(left_panel, label="Get Current activity")  # 在初始化时添加按钮和绑定事件处理器
+        self.btn_activity.Bind(wx.EVT_BUTTON, self.on_current_activity)
+        row0_sizer.Add(self.btn_activity, 1, wx.ALL, 5)
+
+        # 选择APK文件按钮
+        self.btn_select_apk = wx.Button(left_panel, label="Select APK and Parse")
+        self.btn_select_apk.Bind(wx.EVT_BUTTON, self.on_select_apk)
+        row0_sizer.Add(self.btn_select_apk, 1, wx.ALL, 5)
+
         app_action_sizer.Add(row0_sizer, 0, wx.EXPAND)
 
         # Actions Section within the combined section
@@ -491,6 +500,91 @@ class ADBManager(wx.Frame):
             selected_device = self.listbox_devices.GetString(device)
             thread = threading.Thread(target=self.execute_clear_logs, args=(selected_device,))
             thread.start()
+
+    def on_current_activity(self, event):
+        """获取选中设备的当前应用的 Activity 并输出到日志"""
+        selected_device_indices = self.listbox_devices.GetSelections()
+        if not selected_device_indices:
+            self.log_message("WARNING", "Please select at least one device first!")
+            return
+
+        no_active_activity_devices = []
+        error_devices = []
+
+        # 依次获取每个选中设备的当前 Activity 信息
+        for index in selected_device_indices:
+            device_name = self.listbox_devices.GetString(index)
+            adb_command = ["adb", "-s", device_name, "shell", "dumpsys", "window", "|", "grep", "mCurrentFocus"]
+
+            try:
+                # 执行 adb 命令
+                result = subprocess.run(adb_command, shell=False, capture_output=True, encoding="utf-8",
+                                        creationflags=subprocess.CREATE_NO_WINDOW)
+
+                if result.returncode == 0:
+                    # 获取并格式化输出的 Activity 信息
+                    activity_info = result.stdout.strip()
+                    if activity_info:
+                        self.log_message("INFO", f"Device: {device_name} - Current Activity: {activity_info}")
+                    else:
+                        no_active_activity_devices.append(device_name)
+                else:
+                    # 记录错误信息
+                    error_devices.append((device_name, result.stderr.strip()))
+            except subprocess.CalledProcessError as e:
+                error_devices.append((device_name, str(e)))
+            except OSError as e:
+                error_devices.append((device_name, str(e)))
+            except Exception as e:
+                error_devices.append((device_name, str(e)))
+
+        if no_active_activity_devices:
+            self.log_message("WARNING", f"No active Activity found on devices: {', '.join(no_active_activity_devices)}")
+
+        for device_name, error_msg in error_devices:
+            self.log_message("ERROR", f"Device: {device_name} - Failed to retrieve current Activity: {error_msg}")
+
+    def on_select_apk(self, event):
+        # 弹出文件选择框
+        with wx.FileDialog(self, "Select APK File", wildcard="APK files (*.apk)|*.apk",
+                           style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fileDialog:
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                return
+
+            # 获取选中的APK文件路径
+            apk_path = fileDialog.GetPath()
+
+            # 验证文件路径是否为有效的APK文件
+            if not apk_path.endswith('.apk'):
+                self.log_message("ERROR", f"Invalid APK file: {apk_path}\n")
+                return
+
+            self.log_message("INFO", f"Selected APK: {apk_path}\n")
+
+            # 调用 aapt 命令解析APK信息
+            self.parse_apk_info(apk_path)
+
+    def parse_apk_info(self, apk_path):
+        aapt_command = ["aapt", "dump", "badging", apk_path]
+
+        try:
+            # 执行 aapt 命令
+            output = subprocess.run(aapt_command, capture_output=True, text=True, check=True).stdout
+
+            # 输出解析结果到日志
+            self.log_message("INFO", "APK Info:\n")
+            self.log_message("INFO", output + "\n")
+
+        except subprocess.CalledProcessError as e:
+            self.log_message("ERROR", "Failed to parse APK info.\n")
+            self.log_message("ERROR", f"Command: {' '.join(aapt_command)}\n")
+            self.log_message("ERROR", f"Return code: {e.returncode}\n")
+            self.log_message("ERROR", f"Output: {e.output}\n")
+            self.log_message("ERROR", f"Error: {e.stderr}\n")
+
+        except Exception as e:
+            self.log_message("ERROR", "An unexpected error occurred while parsing APK info.\n")
+            self.log_message("ERROR", str(e) + "\n")
 
     def execute_clear_logs(self, selected_device):
         try:
