@@ -13,7 +13,7 @@ B11_132:
 MiBox4_195:
   platformName: Android
   automationName: UiAutomator2
-  platformVersion: '9'
+  platformVersion: '12'
   deviceName: 10.0.0.195:5555
   systemport: '8200'
   appActivity: com.mm.droid.livetv.normal
