@@ -25,50 +25,50 @@ class TopMenuElements:
 
         # home_menu_container
         self.home_menu_container = CreateElement.create(Locator_Type.XPATH,
-                                                        '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[1]',
+                                                        '//android.widget.GridView[@resource-id="com.mm.droid.livetv.stb31023418:id/menu_list"]/android.widget.RelativeLayout[1]',
                                                         wait_type=Wait_By.VISIBILITY_OF)
         self.home_menu_icon = CreateElement.create(Locator_Type.XPATH,
-                                                   '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[1]/android.widget.ImageView',
+                                                   '(//android.widget.ImageView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_iv_icons"])[1]',
                                                    wait_type=Wait_By.VISIBILITY_OF)
         self.home_menu_text = CreateElement.create(Locator_Type.XPATH,
-                                                   '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[1]/android.widget.TextView',
+                                                   '//android.widget.TextView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_mtv_item_name" and @text="Home"]',
                                                    wait_type=Wait_By.VISIBILITY_OF)
 
         # live_menu_container
         self.live_menu_container = CreateElement.create(Locator_Type.XPATH,
-                                                        '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[2]',
+                                                        '//android.widget.GridView[@resource-id="com.mm.droid.livetv.stb31023418:id/menu_list"]/android.widget.RelativeLayout[2]',
                                                         wait_type=Wait_By.VISIBILITY_OF)
         self.live_menu_icon = CreateElement.create(Locator_Type.XPATH,
-                                                   '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[2]/android.widget.ImageView',
+                                                   '(//android.widget.ImageView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_iv_icons"])[2]',
                                                    wait_type=Wait_By.VISIBILITY_OF)
         self.live_menu_text = CreateElement.create(Locator_Type.XPATH,
-                                                   '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[2]/android.widget.TextView',
+                                                   '//android.widget.TextView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_mtv_item_name" and @text="Live"]',
                                                    wait_type=Wait_By.VISIBILITY_OF)
 
         # replay_menu_container
         self.replay_menu_container = CreateElement.create(Locator_Type.XPATH,
-                                                          '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[3]',
+                                                          '//android.widget.GridView[@resource-id="com.mm.droid.livetv.stb31023418:id/menu_list"]/android.widget.RelativeLayout[3]',
                                                           wait_type=Wait_By.VISIBILITY_OF)
         self.replay_menu_icon = CreateElement.create(Locator_Type.XPATH,
-                                                     '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[3]/android.widget.ImageView',
+                                                     '(//android.widget.ImageView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_iv_icons"])[3]',
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.replay_menu_text = CreateElement.create(Locator_Type.XPATH,
-                                                     '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[3]/android.widget.TextView',
+                                                     '//android.widget.TextView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_mtv_item_name" and @text="Replay"]',
                                                      wait_type=Wait_By.VISIBILITY_OF)
 
         # search_menu_container
         self.search_menu_container = CreateElement.create(Locator_Type.XPATH,
-                                                          '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[4]',
+                                                          '//android.widget.GridView[@resource-id="com.mm.droid.livetv.stb31023418:id/menu_list"]/android.widget.RelativeLayout[4]',
                                                           wait_type=Wait_By.VISIBILITY_OF)
         self.search_menu_icon = CreateElement.create(Locator_Type.XPATH,
-                                                     '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[4]/android.widget.ImageView',
+                                                     '(//android.widget.ImageView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_iv_icons"])[4]',
                                                      wait_type=Wait_By.VISIBILITY_OF)
         self.search_menu_text = CreateElement.create(Locator_Type.XPATH,
-                                                     '/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.GridView/android.widget.RelativeLayout[4]/android.widget.TextView',
+                                                     '//android.widget.TextView[@resource-id="com.mm.droid.livetv.stb31023418:id/leftmenulistitem_mtv_item_name" and @text="Search"]',
                                                      wait_type=Wait_By.VISIBILITY_OF)
 
-        # profile_menu_container
+        # profile_menu
         self.profile_menu_container = CreateElement.create(Locator_Type.ID,'com.mm.droid.livetv.stb31023418:id/profile_ll',
                                                            wait_type=Wait_By.VISIBILITY_OF)
-        self.profile_menu_icon = CreateElement.create(Locator_Type.ID,'/hierarchy/android.widget.FrameLayout/android.widget.LinearLayout/android.widget.FrameLayout/android.widget.RelativeLayout/android.widget.RelativeLayout[1]/android.widget.RelativeLayout/android.widget.LinearLayout/android.widget.RelativeLayout/android.widget.ImageView',
-                                                      wait_type=Wait_By.VISIBILITY_OF)
+        self.profile_name = CreateElement.create(Locator_Type.ID,'com.mm.droid.livetv.stb31023418:id/profile_name_tv',
+                                                wait_type=Wait_By.VISIBILITY_OF)
