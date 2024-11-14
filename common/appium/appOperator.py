@@ -6,6 +6,8 @@
  @description :
  @time        :  2024/10/8 16:53
 """
+import time
+
 from appium.webdriver.common.mobileby import MobileBy
 from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.common.multi_action import MultiAction
@@ -159,6 +161,7 @@ class AppOperator:
         截取元素图片
         :param image_file_name: 保存图片的文件名
         :return: 图片存储的路径
+        @param element:
         """
         webElement = self._change_element_to_webElement_type(element)
         webElement_x = webElement.location['x']
@@ -284,36 +287,72 @@ class AppOperator:
         except TimeoutException:
             return False
 
+    def get_element_text_by_id(self, elementInfo, timeout=10):
+        """
+        使用 By.ID 定位元素并返回其 text 内容。
+        :param timeout: 等待元素的最长时间，默认为10秒
+        :return: 元素的文本内容，如果未找到则返回 None
+        @param elementInfo:
+        """
+        locator_type = elementInfo.locator_type
+        locator_value = elementInfo.locator_value
+        try:
+            # 等待元素出现并获取
+            element_locator = WebDriverWait(self._driver, timeout).until(
+                EC.presence_of_element_located((locator_type, locator_value))
+            )
+
+            # 获取 text 内容
+            text_content = element_locator.text
+            logger.info(f"Text content of the account ID '{locator_value}': {text_content}")
+            return text_content
+        except Exception as e:
+            print(f"Failed to retrieve text for element with ID '{locator_value}': {e}")
+            return None
+
     def move_cursor_to_element(self, element):
         try:
-            # 获取目标元素的定位信息
             target_element = self._change_element_to_webElement_type(element)
+            initial_target_location = target_element.location
             logger.info(f"目标元素: {target_element}")
 
-            # 获取当前焦点元素
             current_element = self._get_current_focused_element()
             if not current_element:
-                # 尝试按下一次 DOWN 键
                 self._remoteControl.press_down()
-                # 再次尝试获取当前焦点元素
                 current_element = self._get_current_focused_element()
                 if not current_element:
-                    # 如果仍然无法获取焦点，尝试将焦点设置到一个已知的元素
                     self._focus_on_default_element()
                     current_element = self._get_current_focused_element()
                     if not current_element:
                         raise Exception("无法获取当前焦点的元素，焦点可能不在当前页面")
 
-            # 获取当前光标元素的坐标
             current_location = current_element.location
-            target_location = target_element.location
-
-            # 自动计算最短路径并移动光标
+            target_location = initial_target_location
             logger.info(f"当前光标位置: {current_location}")
             logger.info(f"目标元素位置: {target_location}")
 
-            self._move_cursor(current_location, target_location)
+            max_attempts = 10  # 设置最大尝试次数
+            attempts = 0
 
+            while current_location != target_location and attempts < max_attempts:
+                updated_target_location = target_element.location
+                if updated_target_location != target_location:
+                    logger.warning("目标元素位置已发生改变，重新计算位置")
+                    target_location = updated_target_location
+
+                self._move_cursor(current_location, target_location)
+                current_element = self._get_current_focused_element()
+                if not current_element:
+                    raise Exception("无法获取当前焦点的元素，焦点可能不在当前页面")
+
+                current_location = current_element.location
+                attempts += 1  # 增加尝试计数
+
+            if attempts >= max_attempts:
+                logger.error("达到最大尝试次数，无法将光标移动到目标元素")
+                raise Exception("光标移动失败，超过最大尝试次数")
+
+            logger.info("光标成功移动到目标元素")
         except Exception as e:
             logger.error(f"移动光标时发生错误: {e}")
             raise e
@@ -444,6 +483,16 @@ class AppOperator:
         :return:
         """
         self._driver.execute_script(script)
+
+    def restart_app(self, delay=2):
+        """关闭并重新启动应用，重启过程中可设置延时"""
+        try:
+            self._driver.close_app()
+            time.sleep(delay)  # 等待应用关闭
+            self._driver.launch_app()
+            logger.info("App has been restarted.")
+        except Exception as e:
+            logger.error(f"Failed to restart app: {e}")
 
     def install_app(self, filePath):
         self._driver.install_app(os.path.abspath(filePath))

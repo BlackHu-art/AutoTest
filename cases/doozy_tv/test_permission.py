@@ -12,7 +12,7 @@ from common.logger.logTool import logger
 import pytest
 
 
-class TestStartPage:
+class TestPermission:
     def setup_class(self):
         """在测试类级别初始化Android_Project_Client，只运行一次"""
         self.demoProjectClient = Android_Project_Client()

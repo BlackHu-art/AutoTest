@@ -104,7 +104,7 @@ class YamlTool:
 
 # 调用示例
 if __name__ == '__main__':
-    yaml_tool = YamlTool('config/example.yaml')
+    yaml_tool = YamlTool('test_data/doozy_tv/accountInfo.yaml')
 
     # 获取值
     desired_caps = yaml_tool.get("desired_caps_poco")

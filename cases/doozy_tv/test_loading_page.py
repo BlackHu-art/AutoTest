@@ -32,5 +32,5 @@ class TestLoadingPage:
 
     def teardown_class(self):
         logger.info('TestLoadingPage测试用例执行结束，保留应用状态')
-        self.demoProjectClient.appOperator.close_app()
+        # self.demoProjectClient.appOperator.close_app()
         pass  # 如果不需要关闭应用或销毁 session，则保留应用状态
