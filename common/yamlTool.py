@@ -90,10 +90,16 @@ class YamlTool:
     def update_nested_value(self, parent_key, child_key, new_value):
         """更新嵌套字典中的值"""
         parent_value = self.data.get(parent_key)
+
         if isinstance(parent_value, dict):
-            parent_value[child_key] = new_value
+            # 将新值转换为字符串，以保留前导零
+            new_value_str = str(new_value)
+            parent_value[child_key] = new_value_str
             self.save_yaml()
-            logger.info(f"更新嵌套键 {parent_key}.{child_key} 的值为: {new_value}")
+            logger.info(f"更新嵌套键 {parent_key}.{child_key} 的值为: {new_value_str}")
+        elif isinstance(parent_value, str):
+            # 如果 parent_value 是字符串，记录警告日志并返回
+            logger.warning(f"父键 {parent_key} 是字符串类型，无法更新子键 {child_key}")
         else:
             logger.error(f"父键 {parent_key} 不存在或不是字典类型")
 

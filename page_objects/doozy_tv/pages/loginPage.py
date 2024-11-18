@@ -51,9 +51,17 @@ class LoginPage:
         if self._appOperator.is_displayed(self.loginMethodPageElements.login_login_with_btn):
             logger.info('login_with_btn is displayed')
             self._appOperator.move_cursor_to_element(self.loginMethodPageElements.login_login_with_btn)
-            self._appOperator.get_screenshot('login_with_btn is Selected')
+            self._appOperator.get_screenshot('login_login_with_btn is Selected')
             self._remoteControl.press_ok()
-            logger.warning('login_with_btn is clicked')
+            logger.warning('login_login_with_btn is clicked')
+
+    def click_register_btn(self):
+        if self._appOperator.is_displayed(self.loginMethodPageElements.login_sign_up_btn):
+            logger.info('login_sign_up_btn is displayed')
+            self._appOperator.move_cursor_to_element(self.loginMethodPageElements.login_sign_up_btn)
+            self._appOperator.get_screenshot('login_sign_up_btn is Selected')
+            self._remoteControl.press_ok()
+            logger.warning('login_sign_up_btn is clicked')
 
     def switch_to_login_with_email(self):
         if self._appOperator.is_displayed(self.loginPageElements.login_email_element):
@@ -129,4 +137,14 @@ class LoginPage:
                 logger.error('login fail')
         else:
             return False
+
+    def check_logout_success(self):
+        if self._appOperator.is_displayed(self.profilePageElements.profile_account_userid):
+            acc = self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid)
+            self._appOperator.get_screenshot('logout_success account : ' + acc)
+            logger.info('logout success')
+            return True
+        else:
+            return False
+
 

@@ -1,0 +1,8 @@
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+
+# 生产账号及验证码
+userRegisterInfoPro:
+  account: bbe9d41486@ipwangxin.cn
+  verifyCode: '9211'
+  password: '000000'
