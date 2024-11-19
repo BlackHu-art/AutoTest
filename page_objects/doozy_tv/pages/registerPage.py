@@ -6,13 +6,12 @@
  @description :  
  @time        :    13:45
 """
-import multiprocessing
 import threading
 import time
 
 from common.logger.logTool import logger
 from common.yamlTool import YamlTool
-from common.mail.registerAccount import WebSocketClient
+from common.mail.registerMailAccount import WebSocketClient
 from common.appium.remoteControlActions import RemoteControlActions
 from page_objects.doozy_tv.elements.registerPageElements import RegisterPageElements
 from page_objects.doozy_tv.elements.topMenuElements import TopMenuElements

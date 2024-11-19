@@ -10,22 +10,25 @@ import json
 import websocket
 import re
 from threading import Timer, Lock
+from datetime import datetime, timedelta
 from common.logger.logTool import logger
 from common.yamlTool import YamlTool
 
 
 class WebSocketClient:
     URL = "wss://mail.ipwangxin.cn/ws/email"  # 固定 URL
+    KEEP_ALIVE_INTERVAL = 6  # 保活间隔时间（秒）
+    TIME_LIMIT = 120  # 主线程超时时间（秒）
+    MAX_KEEP_ALIVE_ATTEMPTS = 3  # 最大保活次数
 
     def __init__(self):
         self.ws = None
-        self.time_limit = 120  # 主线程超时时间
-        self.keep_alive_interval = 6  # 保活间隔时间
         self.account = None
         self.keep_alive_timer = None
         self.keep_alive_running = False
-        self.keep_alive_count = 0
+        self.keep_alive_attempts = 0
         self.main_thread_timer = None
+        self.found_verification_code = False
         self.lock = Lock()
         self.verification_code = None
 
@@ -39,15 +42,14 @@ class WebSocketClient:
         try:
             data = json.loads(message)
             event = data.get("event")
-            handler = {
+            event_handlers = {
                 "DOMAIN_NAME": self.handle_domain_name,
                 "REFRESH": self.handle_refresh,
                 "LIST_MAIL": self.handle_list_mail,
                 "NEW_EMAIL": self.handle_new_email,
-            }.get(event)
-
-            if handler:
-                handler(data)
+            }
+            if event in event_handlers:
+                event_handlers[event](data)
             else:
                 logger.warning(f"未处理的事件: {event}")
         except json.JSONDecodeError:
@@ -74,11 +76,11 @@ class WebSocketClient:
 
     def handle_list_mail(self, data):
         emails = data.get("data", [])
-        if not emails:
+        if emails:
+            self.process_emails(emails)
+        else:
             logger.info("邮件列表为空，启动保活")
             self.start_keep_alive()
-        else:
-            self.process_emails(emails)
 
     def handle_new_email(self, data):
         email = data.get("data", {})
@@ -88,11 +90,22 @@ class WebSocketClient:
 
     # ========== 邮件处理方法 ==========
     def process_emails(self, emails):
-        """处理邮件列表并提取验证码"""
-        for email in emails:
+        """处理邮件列表并提取两分钟内的最新验证码"""
+        current_time = datetime.now()
+        two_minutes_ago = current_time - timedelta(minutes=2)
+
+        # 筛选两分钟内的邮件并按接收时间排序
+        valid_emails = [
+            email for email in emails
+            if "receivedTime" in email and datetime.fromtimestamp(email["receivedTime"] / 1000) > two_minutes_ago
+        ]
+        valid_emails.sort(key=lambda x: x["receivedTime"], reverse=True)
+
+        for email in valid_emails:
             content = email.get("content")
             if content and self.extract_and_save_verification_code(content):
                 return
+
         logger.info("未找到验证码，继续保活")
         self.start_keep_alive()
 
@@ -119,30 +132,40 @@ class WebSocketClient:
         """启动保活"""
         if not self.keep_alive_running:
             self.keep_alive_running = True
-            self.keep_alive_count = 0
+            self.keep_alive_attempts = 0
+            logger.info("保活线程启动")
             self.schedule_keep_alive()
 
     def schedule_keep_alive(self):
         """计划下一次保活"""
         if self.keep_alive_running:
-            self.keep_alive_timer = Timer(self.keep_alive_interval, self.keep_alive_loop)
+            self.keep_alive_timer = Timer(self.KEEP_ALIVE_INTERVAL, self.keep_alive_loop)
             self.keep_alive_timer.start()
 
     def keep_alive_loop(self):
-        """执行保活操作"""
-        if self.keep_alive_count >= 3:
+        """保活操作逻辑"""
+        if self.found_verification_code:
+            logger.warning("验证码已找到，停止保活")
+            self.stop_keep_alive()
+            return
+
+        if self.keep_alive_attempts >= self.MAX_KEEP_ALIVE_ATTEMPTS:
+            logger.info("保活尝试达到最大次数，重新请求邮件列表")
             self.send_message({"event": "LIST_MAIL"})
             self.stop_keep_alive()
         else:
-            self.keep_alive_count += 1
+            self.keep_alive_attempts += 1
+            logger.info(f"发送保活信号，第 {self.keep_alive_attempts} 次")
             self.send_message({"bt": "bt"})
             self.schedule_keep_alive()
 
     def stop_keep_alive(self):
         """停止保活"""
-        self.keep_alive_running = False
-        if self.keep_alive_timer:
-            self.keep_alive_timer.cancel()
+        if self.keep_alive_running:
+            self.keep_alive_running = False
+            if self.keep_alive_timer:
+                self.keep_alive_timer.cancel()
+            logger.info("保活线程停止")
 
     # ========== WebSocket 操作 ==========
     def send_message(self, message):
@@ -174,7 +197,7 @@ class WebSocketClient:
                                          on_message=self.on_message,
                                          on_error=self.on_error,
                                          on_close=self.on_close)
-        self.main_thread_timer = Timer(self.time_limit, self.stop_main_thread)
+        self.main_thread_timer = Timer(self.TIME_LIMIT, self.stop_main_thread)
         self.main_thread_timer.start()
         self.ws.run_forever()
 
