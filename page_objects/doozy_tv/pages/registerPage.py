@@ -29,7 +29,6 @@ class RegisterPage:
         self.profilePageElements = ProfilePageElements()
         self.loginMethodPageElements = LoginMethodPageElements()
         self.client = WebSocketClient()
-        self.yamlTool = YamlTool("common/mail/mail.yaml")
 
     def click_back_btn(self):
         self._remoteControl.press_back()
@@ -66,10 +65,10 @@ class RegisterPage:
     def perform_other_operations(self):
         # 此处为一个请求循环监听器，用于获取邮箱验证码
         # self.client.start_with_new_account()
-        email = self.yamlTool.get_nested_value('userRegisterInfoPro', 'account')
         if self._appOperator.is_displayed(self.registerPageElements.register_email_input_text):
             self._appOperator.move_cursor_to_element(self.registerPageElements.register_email_input_text)
             logger.info('Email input element is selected')
+            email = YamlTool("common/mail/mail.yaml").get_nested_value('userRegisterInfoPro', 'account')
             self._appOperator.sendText(self.registerPageElements.register_email_input_text, email)
             self._appOperator.get_screenshot('Input register email')
             logger.info('Input register email success')
@@ -83,13 +82,13 @@ class RegisterPage:
         verification_code = self.client.get_verification_code()
         # verification_code = self.yamlTool.get_nested_value('userRegisterInfoPro', 'verifyCode')
         logger.info(f"获取到的验证码: {verification_code}")
-        self._appOperator.move_cursor_to_element(self.registerPageElements.register_email_verify_code_btn)
-        self._appOperator.sendText(self.registerPageElements.register_email_verify_code_btn, verification_code)
+        self._appOperator.move_cursor_to_element(self.registerPageElements.register_input_verify_code_edit)
+        self._appOperator.sendText(self.registerPageElements.register_input_verify_code_edit, verification_code)
         self._appOperator.get_screenshot('Input register email verify code')
         logger.info('Input register email verify code success')
 
     def input_register_email_password(self):
-        password = self.yamlTool.get_nested_value('userRegisterInfoPro', 'password')
+        password = YamlTool("common/mail/mail.yaml").get_nested_value('userRegisterInfoPro', 'password')
         self._appOperator.move_cursor_to_element(self.registerPageElements.register_input_password_edit)
         self._appOperator.sendText(self.registerPageElements.register_input_password_edit, password)
         self._appOperator.get_screenshot('Input register email password')
@@ -106,3 +105,12 @@ class RegisterPage:
         self._appOperator.is_selected(self.registerPageElements.register_submit_btn)
         self._appOperator.get_screenshot('Click register submit button')
         self._remoteControl.press_ok()
+
+    def check_register_success(self):
+        uid = self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid)
+        if uid == YamlTool("common/mail/mail.yaml").get_nested_value('userRegisterInfoPro', 'account'):
+            logger.info('Register success')
+            return True
+        else:
+            logger.error('Register failed')
+            return False

@@ -139,11 +139,12 @@ class LoginPage:
             return False
 
     def check_logout_success(self):
+        guest = 'Guest Mode'
         if self._appOperator.is_displayed(self.profilePageElements.profile_account_userid):
-            acc = self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid)
-            self._appOperator.get_screenshot('logout_success account : ' + acc)
-            logger.info('logout success')
-            return True
+            if guest == self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid):
+                self._appOperator.get_screenshot('logout_success account : ' + guest)
+                logger.info('logout success')
+                return True
         else:
             return False
 

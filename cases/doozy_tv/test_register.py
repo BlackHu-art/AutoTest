@@ -27,7 +27,7 @@ class TestRegister:
         yield self.fixture_test
         logger.info('\n...... end ......')
 
-    @pytest.mark.run(order=6)
+    @pytest.mark.run(order=5)
     # @pytest.mark.skipif(reason='跳过此用例')
     def test_register_email(self, fixture_test):
         self._appOperator.restart_app()
@@ -38,6 +38,18 @@ class TestRegister:
         self._registerPage.input_register_email_and_verify_code()
         self._registerPage.input_register_email_password()
         self._registerPage.click_register_submit_btn()
+        self._loginPage.click_profile_btn()
+        self._registerPage.check_register_success()
+
+
+    @pytest.mark.run(order=6)
+    # @pytest.mark.skipif(reason='跳过此用例')
+    def test_logout_email(self, fixture_test):
+        self._appOperator.restart_app()
+        self._loginPage.click_profile_btn()
+        self._loginPage.click_login_btn()
+        self._loginPage.click_profile_btn()
+        self._loginPage.check_logout_success()
 
     def teardown_class(self):
         logger.info('TestStartUpADPage 用例执行结束，保留应用状态')

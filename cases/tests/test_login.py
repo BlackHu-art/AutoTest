@@ -38,6 +38,8 @@ class TestRegister:
         self._registerPage.input_register_email_and_verify_code()
         self._registerPage.input_register_email_password()
         self._registerPage.click_register_submit_btn()
+        self._loginPage.click_profile_btn()
+        self._registerPage.check_register_success()
 
     @pytest.mark.run(order=7)
     # @pytest.mark.skipif(reason='跳过此用例')
