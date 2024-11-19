@@ -20,6 +20,7 @@ class WebSocketClient:
 
     def __init__(self):
         self.ws = None
+        self.time = 20
         self.account = None
         self.keep_alive_timer = None
         self.keep_alive_running = False
@@ -116,7 +117,7 @@ class WebSocketClient:
                                          on_error=self.on_error,
                                          on_close=self.on_close)
         # 启动主线程定时器，2分钟后调用 stop_main_thread 方法
-        self.main_thread_timer = Timer(20, self.stop_main_thread)
+        self.main_thread_timer = Timer(self.time, self.stop_main_thread)
         self.main_thread_timer.start()
         self.ws.run_forever()
 
@@ -134,7 +135,7 @@ class WebSocketClient:
 
     def keep_alive_loop(self):
         """保活循环，每10秒发送一次，持续2分钟"""
-        end_time = time.time() + 120  # 保持2分钟
+        end_time = time.time() + self.time  # 保持2分钟
         while time.time() < end_time and self.keep_alive_running:
             if self.found_verification_code:  # 如果找到验证码，退出循环
                 logger.info("找到验证码，退出保活进程")
@@ -182,12 +183,6 @@ class WebSocketClient:
 if __name__ == "__main__":
     client = WebSocketClient()
     client.start_with_new_account()
-
-    # 等待获取验证码
-    while client.get_verification_code() is None:
-        time.sleep(1)
-        if client.ws.close():
-            break
 
     verification_code = client.get_verification_code()
     print(f"获取到的验证码: {verification_code}")

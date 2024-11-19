@@ -79,10 +79,7 @@ class RegisterPage:
         time.sleep(2)
         self._appOperator.get_screenshot('Click register email verify code button')
         # 等待获取验证码
-        while self.client.get_verification_code() is None:
-            time.sleep(2)
-            self._remoteControl.press_ok()
-
+        time.sleep(6)
         verification_code = self.client.get_verification_code()
         # verification_code = self.yamlTool.get_nested_value('userRegisterInfoPro', 'verifyCode')
         logger.info(f"获取到的验证码: {verification_code}")
