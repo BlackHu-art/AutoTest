@@ -131,7 +131,7 @@ class LoginPage:
         if self._appOperator.is_displayed(self.profilePageElements.profile_account_userid):
             if email == self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid):
                 self._appOperator.get_screenshot('login_success')
-                logger.info('login success')
+                logger.warning('login success')
                 return True
             else:
                 logger.error('login fail')
@@ -143,7 +143,7 @@ class LoginPage:
         if self._appOperator.is_displayed(self.profilePageElements.profile_account_userid):
             if guest == self._appOperator.get_element_text_by_id(self.profilePageElements.profile_account_userid):
                 self._appOperator.get_screenshot('logout_success account : ' + guest)
-                logger.info('logout success')
+                logger.warning('logout success')
                 return True
         else:
             return False
