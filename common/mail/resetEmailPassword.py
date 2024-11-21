@@ -161,6 +161,7 @@ class WebSocketClient:
         """提取验证码"""
         code = self._find_verification_code(content)
         if code:
+            YamlTool("common/mail/mail.yaml").update_nested_value("userRegisterInfoPro", "verifyCode", code)
             logger.info(f"提取到验证码: {code}")
             self.verification_code = code
             self.found_verification_code = True

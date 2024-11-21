@@ -31,6 +31,7 @@ class LoginPage:
 
     def click_profile_btn(self):
         if self._appOperator.is_displayed(self.topMenuElements.top_menu_list_container):
+            self._remoteControl.press_up()
             self._remoteControl.press_right()
             self._remoteControl.press_right()
             self._remoteControl.press_right()

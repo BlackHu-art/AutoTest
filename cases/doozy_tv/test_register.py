@@ -41,7 +41,6 @@ class TestRegister:
         self._loginPage.click_profile_btn()
         self._registerPage.check_register_success()
 
-
     @pytest.mark.run(order=6)
     # @pytest.mark.skipif(reason='跳过此用例')
     def test_logout_email(self, fixture_test):
