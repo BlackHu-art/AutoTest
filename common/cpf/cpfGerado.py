@@ -115,8 +115,8 @@ class CPFGenerator:
 
 # 使用示例
 if __name__ == "__main__":
-    cpf_generator = CPFGenerator(max_threads=5)
-    cpf_generator.generate_document(num_entries=50)
+    cpf_generator = CPFGenerator(max_threads=20)
+    cpf_generator.generate_document(num_entries=10000)
 
 
 
