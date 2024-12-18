@@ -28,7 +28,7 @@ class YamlTool:
                     data = self.yaml.load(f)
                     if data is None:
                         data = {}  # 确保返回空字典而不是 None
-                    logger.info(f"加载YAML文件成功: {self.file_path}")
+                    # logger.info(f"加载YAML文件成功: {self.file_path}")
                     return data
             else:
                 logger.error(f"文件不存在: {self.file_path}")
@@ -42,7 +42,7 @@ class YamlTool:
         try:
             with open(self.file_path, 'w', encoding='utf-8') as f:
                 self.yaml.dump(self.data, f)
-            logger.info(f"保存YAML文件成功: {self.file_path}")
+            # logger.info(f"保存YAML文件成功: {self.file_path}")
         except Exception as ex:
             logger.error(f"保存YAML文件失败: {ex}")
 

@@ -58,8 +58,8 @@ class EmailService(HttpRequest):
                           "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": '"Windows"',
-            "fingerprint": "4794d495216cb6f6f1c31bc4fcbfc770"
+            "sec-ch-ua-platform": '"Windows"'
+            # "fingerprint": "4794d495216cb6f6f1c31bc4fcbfc770"
         }
         self.account = None
         self.emailId = None
@@ -69,32 +69,69 @@ class EmailService(HttpRequest):
         获取随机邮箱账号
         """
         url = f"{self.BASE_URL}/rand_account"
-        try:
-            logger.info(f"Requesting random email from {url}")
-            response = self.session.post(url, headers=self.common_headers, json={})
-            response.raise_for_status()
+        retry = False
 
-            data = response.json()
-            logger.info(f"Response: {data}")
+        while True:
+            try:
+                headers = {
+                    **self.common_headers,
+                    "fingerprint": str(
+                        YamlTool("common/mail/mail.yaml").get_nested_value("userRegisterInfoPro", "fingerprint"))
+                }
 
-            # 判断响应结果，按需处理
-            if data.get("status") == 0:  # 假设 0 表示成功
-                account = data.get("data", {}).get("account")
-                if account:
-                    logger.info(f"Random Email Account: {account}")
-                    self.account = account
-                    YamlTool("common/mail/mail.yaml").update_nested_value("userRegisterInfoPro", "account",
-                                                                          self.account)
+                logger.info(f"Requesting random email from {url}")
+                response = self.session.post(url, headers=headers, json={})
+                response.raise_for_status()
+
+                data = response.json()
+                logger.info(f"Response: {data}")
+
+                # 判断响应结果，按需处理
+                if data.get("status") == 0:  # 假设 0 表示成功
+                    account = data.get("data", {}).get("account")
+                    if account:
+                        logger.info(f"Random Email Account: {account}")
+                        self.account = account
+                        YamlTool("common/mail/mail.yaml").update_nested_value("userRegisterInfoPro", "account",
+                                                                              self.account)
+                    else:
+                        logger.error("Account not found in response data")
+                    return data
+                elif data.get("status") == 104 and not retry:  # 请求频繁，请稍后重试
+                    logger.warning(f"Status 104: {data.get('info', 'Unknown error')}. Retrying...")
+                    self.update_fingerprint()
+                    retry = True
                 else:
-                    logger.error("Account not found in response data")
-                return data
-            else:
-                logger.error(f"API Error: {data.get('info', 'Unknown error')}")
+                    logger.error(f"API Error: {data.get('info', 'Unknown error')}")
+                    return None
+
+            except requests.RequestException as e:
+                logger.error(f"Failed to get random email: {e}")
                 return None
 
-        except requests.RequestException as e:
-            logger.error(f"Failed to get random email: {e}")
-            return None
+    def update_fingerprint(self):
+        """
+        更新 fingerprint 的值
+        """
+        current_fingerprint = YamlTool("common/mail/mail.yaml").get_nested_value("userRegisterInfoPro", "fingerprint")
+
+        # 分割 fingerprint 为两段
+        prefix = current_fingerprint[:-3]
+        suffix = current_fingerprint[-3:]
+
+        try:
+            # 将后缀部分转换为整数并加1
+            new_suffix = str(int(suffix) + 1)
+
+            # 确保新后缀仍然是三位数
+            if len(new_suffix) < 3:
+                new_suffix = new_suffix.zfill(3)
+
+            # 重新拼接 fingerprint
+            new_fingerprint = prefix + new_suffix
+            YamlTool("common/mail/mail.yaml").update_nested_value("userRegisterInfoPro", "fingerprint", new_fingerprint)
+        except ValueError:
+            logger.error("Invalid fingerprint value. Cannot convert to integer.")
 
     def get_email_list(self):
         """获取邮箱列表"""
