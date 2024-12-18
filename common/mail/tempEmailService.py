@@ -8,6 +8,8 @@
 """
 import datetime
 import re
+import time
+
 import requests
 from common.logger.logTool import logger
 from common.yamlTool import YamlTool
@@ -57,9 +59,10 @@ class EmailService(HttpRequest):
             "sec-ch-ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"Windows"',
-            "fingerprint": "4794d495216cb6f6f1c31bc4fcbfc000"
+            "fingerprint": "4794d495216cb6f6f1c31bc4fcbfc770"
         }
         self.account = None
+        self.emailId = None
 
     def get_random_email(self):
         """
@@ -93,7 +96,7 @@ class EmailService(HttpRequest):
             logger.error(f"Failed to get random email: {e}")
             return None
 
-    def get_email_list(self, account):
+    def get_email_list(self):
         """获取邮箱列表"""
         url = f"{self.BASE_URL}/list"
         headers = {
@@ -101,14 +104,14 @@ class EmailService(HttpRequest):
             "app-id": "3",
             "project-id": "toolbox",
             "sign": "41a562316ccfe7f9e0e8ff7ed5f574e8",
-            "timestamp": int(datetime.datetime.now().timestamp()),
+            "timestamp": str(int(datetime.datetime.now().timestamp())),
         }
         data = {
-            "account": account,
+            "account": self.account,
             "page": {"sorts": [{"condition": "date", "order": -1}]}
         }
         try:
-            logger.info(f"Requesting email list for account: {account}")
+            logger.info(f"Requesting email list for account: {self.account}")
             response = self.session.post(url, headers=headers, json=data)
             response.raise_for_status()
             logger.info(f"Response: {response.json()}")
@@ -128,7 +131,7 @@ class EmailService(HttpRequest):
             return match.group(0)
         return None
 
-    def get_email_detail(self, email_id, account):
+    def get_email_detail(self,):
         """
         获取邮箱详情，并提取验证码
         :param email_id: 邮件 ID
@@ -136,9 +139,9 @@ class EmailService(HttpRequest):
         :return: 提取到的验证码字符串，如果失败返回 None
         """
         url = f"{self.BASE_URL}/detail"
-        payload = {"id": email_id, "account": account}
+        payload = {"id": self.emailId, "account": self.account}
         try:
-            logger.info(f"Requesting email details for ID: {email_id}, Account: {account}")
+            logger.info(f"Requesting email details for ID: {self.emailId}, Account: {self.account}")
             response = self.session.post(url, headers=self.common_headers, json=payload)
             response.raise_for_status()
             data = response.json()
@@ -156,6 +159,7 @@ class EmailService(HttpRequest):
                 code = self.extract_verification_code(text_body)
                 if code:
                     logger.info(f"Verification Code Extracted: {code}")
+                    YamlTool("common/mail/mail.yaml").update_nested_value("userRegisterInfoPro", "verifyCode", code)
                     return code
                 else:
                     logger.warning("No verification code found in the email body.")
@@ -168,26 +172,44 @@ class EmailService(HttpRequest):
             logger.error(f"Failed to get email details: {e}")
             return None
 
+    def fetch_and_process_email(self):
+        """
+        执行以下步骤：
+        1. 调用 get_random_email 获取随机邮箱账号。
+        2. 循环调用 get_email_list，最多6次，每次间隔10秒，直到响应数据中的 "total": 1。
+        3. 解析响应数据获取邮件ID。
+        4. 使用获取到的邮件ID调用 get_email_detail。
+        """
+        # Step 1: 获取随机邮箱账号
+        result = self.get_random_email()
+        if not result or result.get("status") != 0:
+            logger.error("Failed to get random email account.")
+            return
 
-# if __name__ == "__main__":
-#     # 创建 EmailService 实例
-#     email_service = EmailService()
-#
-#     # 邮件 ID 和账号（示例参数）
-#     email_id = "675ff2afc49ccd8706ca8bc2"
-#     account = "6dbqmc@nm123.com"
-#
-#     # 调用方法获取验证码
-#     verification_code = email_service.get_email_detail(email_id, account)
-#     if verification_code:
-#         print(f"Verification Code: {verification_code}")
-#     else:
-#         print("Failed to retrieve verification code.")
+        # Step 2: 循环调用 get_email_list
+        for attempt in range(6):
+            email_list = self.get_email_list()
+            if email_list and email_list.get("data", {}).get("total") == 1:
+                rows = email_list.get("data", {}).get("rows", [])
+                if rows:
+                    self.emailId = rows[0].get("id")
+                    logger.info(f"Found email with ID: {self.emailId}")
+                    break
+            logger.info(f"Attempt {attempt + 1}: No emails found yet. Retrying in 10 seconds...")
+            time.sleep(10)
+
+        if not self.emailId:
+            logger.error("Failed to find any emails after 6 attempts.")
+            return
+
+        # Step 3: 获取邮箱详情
+        detail = self.get_email_detail()
+        if detail:
+            logger.info(f"Email detail fetched successfully: {detail}")
+        else:
+            logger.error("Failed to fetch email detail.")
 
 
 if __name__ == "__main__":
     email_service = EmailService()
-    result = email_service.get_random_email()
-    # print(int(datetime.datetime.now().timestamp()))
-
-
+    email_service.fetch_and_process_email()
