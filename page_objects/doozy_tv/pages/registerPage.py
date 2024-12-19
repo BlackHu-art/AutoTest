@@ -11,7 +11,7 @@ import time
 
 from common.logger.logTool import logger
 from common.yamlTool import YamlTool
-from common.mail.registerMailAccount import WebSocketClient
+from common.mail.tempEmailService import EmailService
 from common.appium.remoteControlActions import RemoteControlActions
 from page_objects.doozy_tv.elements.registerPageElements import RegisterPageElements
 from page_objects.doozy_tv.elements.topMenuElements import TopMenuElements
@@ -27,7 +27,7 @@ class RegisterPage:
         self.topMenuElements = TopMenuElements()
         self.profilePageElements = ProfilePageElements()
         self.loginMethodPageElements = LoginMethodPageElements()
-        self.client = WebSocketClient()
+        self.emailService = EmailService()
 
     def click_back_btn(self):
         self._remoteControl.press_back()
@@ -52,19 +52,10 @@ class RegisterPage:
 
     def input_register_email_and_verify_code(self):
         # 创建一个新线程来执行 start_with_new_account
-        thread = threading.Thread(target=self.client.start_with_new_account)
+        thread = threading.Thread(target=self.emailService.fetch_and_process_email)
         thread.start()
         time.sleep(3)
-
-        # 在主线程中执行其他操作
-        self.perform_other_operations()
-
-        # 等待线程完成
-        thread.join()
-
-    def perform_other_operations(self):
         # 此处为一个请求循环监听器，用于获取邮箱验证码
-        # self.client.start_with_new_account()
         if self._appOperator.is_displayed(self.registerPageElements.register_email_input_text):
             self._appOperator.move_cursor_to_element(self.registerPageElements.register_email_input_text)
             logger.info('Email input element is selected')
@@ -77,11 +68,11 @@ class RegisterPage:
         self._remoteControl.press_ok()
         time.sleep(2)
         self._appOperator.get_screenshot('Click register email verify code button')
-        # 等待获取验证码
-        time.sleep(6)
-        verification_code = self.client.get_verification_code()
-        # verification_code = self.yamlTool.get_nested_value('userRegisterInfoPro', 'verifyCode')
-        logger.warning(f"获取到的验证码: {verification_code}")
+        # 等待线程完成
+        thread.join()
+        # verification_code = self.emailService.get_email_detail()
+        verification_code = YamlTool("common/mail/mail.yaml").get_nested_value('userRegisterInfoPro', 'verifyCode')
+        # logger.warning(f"获取到的验证码: {verification_code}")
         self._appOperator.move_cursor_to_element(self.registerPageElements.register_input_verify_code_edit)
         self._appOperator.sendText(self.registerPageElements.register_input_verify_code_edit, verification_code)
         self._appOperator.get_screenshot('Input register email verify code')

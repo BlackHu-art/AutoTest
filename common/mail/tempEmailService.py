@@ -171,8 +171,6 @@ class EmailService(HttpRequest):
     def get_email_detail(self,):
         """
         获取邮箱详情，并提取验证码
-        :param email_id: 邮件 ID
-        :param account: 邮箱账号
         :return: 提取到的验证码字符串，如果失败返回 None
         """
         url = f"{self.BASE_URL}/detail"
@@ -239,7 +237,7 @@ class EmailService(HttpRequest):
             logger.error("Failed to find any emails after 6 attempts.")
             return
 
-        # Step 3: 获取邮箱详情
+        # Step 3: 获取邮件验证码
         detail = self.get_email_detail()
         if detail:
             logger.info(f"Email detail fetched successfully: {detail}")

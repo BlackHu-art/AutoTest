@@ -154,7 +154,7 @@ if __name__ == '__main__':
         deal_pytest_ini_file()
 
         # 初始化java依赖的libs
-        java_maven_init()
+        # java_maven_init()
 
         # 初始化httpserver
         http_server_init()
