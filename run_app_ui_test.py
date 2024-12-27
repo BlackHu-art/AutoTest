@@ -30,7 +30,7 @@ def pytest_main(pytest_execute_params):
         pytest.main(pytest_execute_params)
 
         # 记录执行结果，确保将 int 转换为 str 输出
-        # logger.info(f"pytest 主函数执行完成，退出码：{exit_code}")
+        # logger.info(f"pytest 主函数执行完成，退出码{exit_code}")
 
     except Exception as e:
         logger.error(f"pytest 主函数执行失败： {str(e)}", exc_info=True)
