@@ -16,117 +16,114 @@ from common.pathTool import path_tool
 from pathlib import Path
 import configparser
 
-
-def singleton_class_decorator(cls):
-    _instance = {}
+def singleton_class(cls):
+    """
+    单例模式装饰器
+    """
+    instances = {}
 
     @wraps(cls)
-    def wrapper_class(*args, **kwargs):
-        if cls not in _instance:
-            _instance[cls] = cls(*args, **kwargs)
-        return _instance[cls]
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
 
-    return wrapper_class
+    return get_instance
 
-
-@singleton_class_decorator
+@singleton_class
 class Logger:
     """
     日志封装类，使用 loguru 进行日志记录，支持读取配置文件。
     """
 
     def __init__(self):
-        self.config = self.read_ini()
+        self.config = self._load_config()
         self.project_path = path_tool.get_project_path()  # 初始化项目路径
-        self.logger_add()  # 初始化日志配置
+        self._setup_logger()  # 初始化日志配置
 
     @staticmethod
-    def read_ini():
+    def _load_config():
         """
-        读取日志配置文件log.ini。
-        :return: configparser对象
+        加载日志配置文件 log.ini。
+        :return: configparser 对象
         """
         config = configparser.ConfigParser(inline_comment_prefixes=('#', ';'))
+        ini_path = Path(__file__).parent / 'log.ini'
         try:
-            ini_path = Path(Path(__file__).parent, 'log.ini')
             if ini_path.exists():
                 config.read(ini_path, encoding="utf-8")
             else:
-                loguru_logger.error(f"配置文件未找到: {ini_path}")
+                loguru_logger.warning(f"配置文件未找到: {ini_path}")
         except Exception as e:
             loguru_logger.error(f"读取配置文件失败: {e}")
         return config
 
-    def get_log_path(self):
+    def _get_log_path(self):
         """
         获取日志文件路径。
         :return: 日志文件的绝对路径
         """
-        project_log_dir = Path(self.project_path, 'logs')
-        print(project_log_dir)
-        project_log_filename = f'{datetime.date.today()}.log'
-        project_log_path = Path(project_log_dir, project_log_filename)
+        log_dir = Path(self.project_path) / 'logs'
+        log_file = f"{datetime.date.today()}.log"
+        log_path = log_dir / log_file
 
         try:
-            project_log_dir.mkdir(parents=True, exist_ok=True)  # 创建日志目录
+            log_dir.mkdir(parents=True, exist_ok=True)  # 创建日志目录
         except Exception as e:
             loguru_logger.error(f"创建日志目录失败: {e}")
-        return project_log_path
+        return log_path
 
-    def logger_add(self):
+    def _setup_logger(self):
         """
         配置 loguru 日志输出，包含标准输出和文件输出。
         """
         loguru_logger.remove()
 
-        # 从配置文件获取日志级别
-        def get_level(section):
-            return self.config.get(section, 'level', fallback='INFO')
-
-        # 标准输出日志
+        # 标准输出日志配置
         if self.config.get('StderrLog', 'is_open', fallback='off').lower() == "on":
             loguru_logger.add(
                 sys.stderr,
-                format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level:<8}</level> | "
-                       "{thread.name:<20} | <cyan>{module:<10}</cyan>.<cyan>{function:<10}</cyan>:<cyan>{line:<3}</cyan> | "
-                       "<level>{message}</level>",
-                level=get_level('StderrLog'),
+                format=(
+                    "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+                    "<level>{level:<8}</level> | "
+                    "{thread.name:<20} | "
+                    "<cyan>{module}</cyan>.<cyan>{function}</cyan>:<cyan>{line}</cyan> | "
+                    "<level>{message}</level>"
+                ),
+                level=self.config.get('StderrLog', 'level', fallback='INFO'),
             )
 
-        # 文件输出日志
+        # 文件输出日志配置
         if self.config.get('FileLog', 'is_open', fallback='off').lower() == "on":
-            project_log_path = self.get_log_path()
+            log_path = self._get_log_path()
             loguru_logger.add(
-                sink=str(project_log_path),
+                sink=str(log_path),
                 rotation=self.config.get('FileLog', 'rotation', fallback="1 week"),
                 retention=self.config.get('FileLog', 'retention', fallback="1 month"),
                 compression='zip',
                 encoding="utf-8",
                 enqueue=True,
-                format="[{time:YYYY-MM-DD HH:mm:ss} {level:<8} | {file}:{module}.{function}:{line}]  {message}",
-                level=get_level('FileLog'),
+                format=(
+                    "[{time:YYYY-MM-DD HH:mm:ss}] | {level:<8} | {file}:{module}:{line} | {message}"
+                ),
+                level=self.config.get('FileLog', 'level', fallback='INFO'),
             )
 
     @property
-    def get_logger(self):
+    def logger(self):
         """
         获取 loguru logger 实例。
         :return: loguru.logger
         """
         return loguru_logger
 
-
 # 实例化日志类
-logger = Logger().get_logger
+logger = Logger().logger
 
 if __name__ == '__main__':
-    logger.debug('this is a debug message')
-    logger.info('this is an info message')
-    logger.info('this is an info message')
-    logger.info('this is an info message')
-    logger.info('this is an info message')
-    logger.info('this is an info message')
-    logger.warning('this is a warning message')
-    logger.error('this is an error message')
-    logger.success('this is a success message')
-    logger.critical('this is a critical message')
+    logger.debug('This is a debug message')
+    logger.info('This is an info message')
+    logger.warning('This is a warning message')
+    logger.error('This is an error message')
+    logger.success('This is a success message')
+    logger.critical('This is a critical message')
