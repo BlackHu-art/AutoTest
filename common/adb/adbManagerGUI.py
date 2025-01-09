@@ -7,8 +7,10 @@
 
 import os
 import queue
+import shutil
 import subprocess
 import threading
+import time
 import zipfile
 from datetime import datetime
 
@@ -20,6 +22,17 @@ import yaml
 
 def sanitize_device_name(device_name):
     return "".join([c if c.isalnum() else "_" for c in device_name])
+
+
+def find_adb_path():
+    adb_path = shutil.which('adb')
+    if adb_path is None:
+        raise FileNotFoundError(
+            "ADB executable not found in PATH. Please ensure ADB is installed and added to your system's PATH.")
+    return adb_path
+
+
+ADB_PATH = find_adb_path()
 
 
 class ADBManager(wx.Frame):
@@ -118,7 +131,7 @@ class ADBManager(wx.Frame):
 
         # Select App Section within the combined section
         app_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.combo_apps = wx.ComboBox(left_panel, style=wx.CB_READONLY)
+        self.combo_apps = wx.ComboBox(left_panel)  # 移除 style=wx.CB_READONLY
         app_sizer.Add(wx.StaticText(left_panel, label="Select App"), 0, wx.ALL | wx.CENTER, 5)
         app_sizer.Add(self.combo_apps, 1, wx.EXPAND | wx.ALL, 5)
 
@@ -130,14 +143,13 @@ class ADBManager(wx.Frame):
         self.btn_restart_app.Bind(wx.EVT_BUTTON, self.on_restart_app)
         row0_sizer.Add(self.btn_restart_app, 1, wx.ALL, 5)
 
-        self.btn_activity = wx.Button(left_panel, label="Get Current activity")  # 在初始化时添加按钮和绑定事件处理器
-        self.btn_activity.Bind(wx.EVT_BUTTON, self.on_current_activity)
-        row0_sizer.Add(self.btn_activity, 1, wx.ALL, 5)
+        self.btn_clear_app_data = wx.Button(left_panel, label="Clear App Data")
+        self.btn_clear_app_data.Bind(wx.EVT_BUTTON, self.on_clear_app_data)
+        row0_sizer.Add(self.btn_clear_app_data, 1, wx.ALL | wx.EXPAND, 5)
 
-        # 选择APK文件按钮
-        self.btn_select_apk = wx.Button(left_panel, label="Select APK and Parse")
-        self.btn_select_apk.Bind(wx.EVT_BUTTON, self.on_select_apk)
-        row0_sizer.Add(self.btn_select_apk, 1, wx.ALL, 5)
+        self.btn_screenshot = wx.Button(left_panel, label="Take Screenshot")
+        self.btn_screenshot.Bind(wx.EVT_BUTTON, self.on_take_screenshot)
+        row0_sizer.Add(self.btn_screenshot, 1, wx.ALL | wx.EXPAND, 5)
 
         app_action_sizer.Add(row0_sizer, 0, wx.EXPAND)
 
@@ -162,13 +174,14 @@ class ADBManager(wx.Frame):
         self.btn_clear_logs.Bind(wx.EVT_BUTTON, self.on_clear_logs)
         row2_sizer.Add(self.btn_clear_logs, 1, wx.ALL | wx.EXPAND, 5)
 
-        self.btn_clear_app_data = wx.Button(left_panel, label="Clear App Data")
-        self.btn_clear_app_data.Bind(wx.EVT_BUTTON, self.on_clear_app_data)
-        row2_sizer.Add(self.btn_clear_app_data, 1, wx.ALL | wx.EXPAND, 5)
+        self.btn_activity = wx.Button(left_panel, label="Get Current activity")  # 在初始化时添加按钮和绑定事件处理器
+        self.btn_activity.Bind(wx.EVT_BUTTON, self.on_current_activity)
+        row2_sizer.Add(self.btn_activity, 1, wx.ALL, 5)
 
-        self.btn_screenshot = wx.Button(left_panel, label="Take Screenshot")
-        self.btn_screenshot.Bind(wx.EVT_BUTTON, self.on_take_screenshot)
-        row2_sizer.Add(self.btn_screenshot, 1, wx.ALL | wx.EXPAND, 5)
+        # 选择APK文件按钮
+        self.btn_select_apk = wx.Button(left_panel, label="Select APK and Parse")
+        self.btn_select_apk.Bind(wx.EVT_BUTTON, self.on_select_apk)
+        row2_sizer.Add(self.btn_select_apk, 1, wx.ALL, 5)
 
         app_action_sizer.Add(row2_sizer, 0, wx.EXPAND)
 
@@ -177,6 +190,24 @@ class ADBManager(wx.Frame):
         # performance testing
         monkey_box = wx.StaticBox(left_panel, label='performance testing')
         monkey_sizer = wx.StaticBoxSizer(monkey_box, wx.VERTICAL)
+
+        row0_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        # 初始化 self.apps_activity
+        self.apps_activity = wx.ComboBox(left_panel)
+        row0_sizer.Add(wx.StaticText(left_panel, label="Select Activity"), 0, wx.ALL | wx.CENTER, 5)
+        row0_sizer.Add(self.apps_activity, 1, wx.EXPAND | wx.ALL, 5)
+        monkey_sizer.Add(row0_sizer, 0, wx.EXPAND)
+
+        row1_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_startup_activity = wx.Button(left_panel, label="Get Start Activity")
+        self.btn_startup_activity.Bind(wx.EVT_BUTTON, self.on_get_apps_activity)
+        row1_sizer.Add(self.btn_startup_activity, 1, wx.ALL, 5)
+
+        # 启动时间统计按钮
+        self.btn_startup_time = wx.Button(left_panel, label="Measure App Startup Time")
+        self.btn_startup_time.Bind(wx.EVT_BUTTON, self.on_measure_startup_time)
+        row1_sizer.Add(self.btn_startup_time, 1, wx.EXPAND | wx.ALL, 5)
+        monkey_sizer.Add(row1_sizer, 0, wx.EXPAND)
 
         mon_sizer = wx.BoxSizer(wx.HORIZONTAL)
         mon_sizer.Add(wx.StaticText(left_panel, label="Input times"), 0, wx.ALL | wx.CENTER, 5)
@@ -415,10 +446,12 @@ class ADBManager(wx.Frame):
             "Hardware": ["adb", "-s", device_name, "shell", "getprop", "ro.hardware"],
             "Storage": ["adb", "-s", device_name, "shell", "df", "-h", "/data"],
             "Total Memory": ["adb", "-s", device_name, "shell", "cat", "/proc/meminfo", "|", "grep", "MemTotal"],
-            "Available Memory": ["adb", "-s", device_name, "shell", "cat", "/proc/meminfo", "|", "grep", "MemAvailable"],
+            "Available Memory": ["adb", "-s", device_name, "shell", "cat", "/proc/meminfo", "|", "grep",
+                                 "MemAvailable"],
             "Resolution": ["adb", "-s", device_name, "shell", "wm", "size"],
             "Density": ["adb", "-s", device_name, "shell", "wm", "density"],
             "Timezone": ["adb", "-s", device_name, "shell", "getprop", "persist.sys.timezone"],
+            "Mac": ["adb", "-s", device_name, "shell", "ip", "addr", "show", "wlan0"],
         }
 
         device_info = {}
@@ -491,6 +524,120 @@ class ADBManager(wx.Frame):
         except subprocess.CalledProcessError as e:
             wx.CallAfter(self.log_message, "ERROR", f"Failed to reboot {selected_device}\n{e.output}")
 
+    def on_get_apps_activity(self, event):
+        # 获取选中的设备
+        selected_devices = self.listbox_devices.GetSelections()
+        if not selected_devices:
+            self.log_message("WARNING", "Please select a device first!")
+            return
+
+        # 获取选中的应用
+        selected_app = self.combo_apps.GetValue()
+        if not selected_app:
+            self.log_message("WARNING", "Please select an app first!")
+            return
+
+        # 对于每个选中的设备，获取启动活动
+        for device_index in selected_devices:
+            selected_device = self.listbox_devices.GetString(device_index)
+            self.get_startup_activity(selected_device, selected_app)
+
+    def get_startup_activity(self, device, app_package):
+        try:
+            # 启动应用
+            start_command = f"adb -s {device} shell am start -n {app_package}/.MainActivity"
+            start_result = self.execute_adb_command(start_command)
+            self.log_message("INFO", f"Started {app_package} on {device}: {start_result}")
+
+            # 获取启动事件
+            dumpsys_command = f"adb -s {device} shell dumpsys activity activities"
+            dumpsys_result = self.execute_adb_command(dumpsys_command)
+
+            # 解析输出以获取启动活动的详细信息
+            lines = dumpsys_result.splitlines()
+            found_activity = False
+            for line in lines:
+                if "Hist #0:" in line:
+                    found_activity = True
+                    continue
+                if found_activity:
+                    activity_info = line.strip()
+                    if activity_info:
+                        self.log_message("INFO", f"Startup activity for {app_package} on {device}: {activity_info}")
+                        break
+
+            if not found_activity:
+                self.log_message("WARNING", f"No startup activity found for {app_package} on {device}")
+
+        except subprocess.CalledProcessError as e:
+            self.log_message("ERROR", f"Failed to get startup activity for {app_package} on {device}: {e.output}")
+        except Exception as e:
+            self.log_message("ERROR",
+                             f"An error occurred while getting startup activity for {app_package} on {device}: {str(e)}")
+
+    def on_measure_startup_time(self, event):
+        selected_devices = self.listbox_devices.GetSelections()
+        if not selected_devices:
+            self.log_message("WARNING", "Please select a device first!")
+            return
+
+        app_package = self.combo_apps.GetValue()
+        if not app_package:
+            self.log_message("WARNING", "Please get a valid app package name!")
+            return
+
+        # for index in selected_devices:
+        #     device_name = self.listbox_devices.GetString(index)
+        #     main_activity = self.get_main_activity(device_name, app_package)
+        #     if main_activity:
+        #         threading.Thread(target=self.measure_startup_time, args=(device_name, app_package, main_activity),
+        #                          daemon=True).start()
+        #     else:
+        #         self.log_message("WARNING", f"Unable to determine main activity for {app_package}")
+
+    def measure_startup_time(self, device_name, app_package, main_activity):
+        with self.lock:
+            self.log_message("INFO", f"Measuring startup time for {app_package} on {device_name}.")
+
+        try:
+            start_time = time.time()
+            start_command = ["adb", "-s", device_name, "shell", "am", "start", "-W", "-n", f"{app_package}/{main_activity}"]
+            start_result = self.run_adb_command(device_name, start_command)
+            end_time = time.time()
+
+            if "Error" in start_result:
+                with self.lock:
+                    self.log_message("ERROR", f"Failed to start {app_package} on {device_name}: {start_result}")
+                return
+
+            startup_time = end_time - start_time
+            with self.lock:
+                self.log_message("INFO", f"Startup time for {app_package} on {device_name} is {startup_time:.2f} seconds.")
+
+        except Exception as e:
+            with self.lock:
+                self.log_message("ERROR",
+                                 f"An error occurred while measuring startup time for {app_package} on {device_name}: {str(e)}")
+
+    def run_adb_command(self, device_name, command):
+        try:
+            output = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                check=True,
+                creationflags=subprocess.CREATE_NO_WINDOW
+            ).stdout.strip()
+            return output
+        except subprocess.CalledProcessError as e:
+            with self.lock:
+                self.log_message("ERROR", f"ADB Command Failed on {device_name}: {e.stderr}")
+            return None
+        except UnicodeDecodeError:
+            with self.lock:
+                self.log_message("ERROR", f"ADB Command produced non-UTF-8 output on {device_name}.")
+            return None
+
     def on_clear_logs(self, event):
         selected_devices = self.listbox_devices.GetSelections()
         if not selected_devices:
@@ -516,7 +663,8 @@ class ADBManager(wx.Frame):
         for index in selected_device_indices:
             device_name = self.listbox_devices.GetString(index)
             adb_command = ["adb", "-s", device_name, "shell", "dumpsys", "window", "|", "grep", "mCurrentFocus"]
-            resumed_activity_command = ["adb", "-s", device_name, "shell", "dumpsys", "activity", "activities", "|", "grep", "mResumedActivity"]
+            resumed_activity_command = ["adb", "-s", device_name, "shell", "dumpsys", "activity", "activities", "|",
+                                        "grep", "mResumedActivity"]
 
             try:
                 # 执行 adb 命令获取当前 Activity
@@ -535,7 +683,8 @@ class ADBManager(wx.Frame):
                     error_devices.append((device_name, result.stderr.strip()))
 
                 # 执行 adb 命令获取启动 Activity
-                resumed_result = subprocess.run(resumed_activity_command, shell=False, capture_output=True, encoding="utf-8",
+                resumed_result = subprocess.run(resumed_activity_command, shell=False, capture_output=True,
+                                                encoding="utf-8",
                                                 creationflags=subprocess.CREATE_NO_WINDOW)
 
                 if resumed_result.returncode == 0:
@@ -560,10 +709,13 @@ class ADBManager(wx.Frame):
             self.log_message("WARNING", f"No active Activity found on devices: {', '.join(no_active_activity_devices)}")
 
         if no_resumed_activity_devices:
-            self.log_message("WARNING", f"No resumed Activity found on devices: {', '.join(no_resumed_activity_devices)}")
+            self.log_message("WARNING",
+                             f"No resumed Activity found on devices: {', '.join(no_resumed_activity_devices)}")
 
         for device_name, error_msg in error_devices:
-            self.log_message("ERROR", f"Device: {device_name} - Failed to retrieve current or resumed Activity: {error_msg}")
+            self.log_message("ERROR",
+                             f"Device: {device_name} - Failed to retrieve current or resumed Activity: {error_msg}")
+
     def on_select_apk(self, event):
         # 弹出文件选择框
         with wx.FileDialog(self, "Select APK File", wildcard="APK files (*.apk)|*.apk",
@@ -615,7 +767,7 @@ class ADBManager(wx.Frame):
                 encoding='utf-8',
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
-            wx.CallAfter(self.log_message, "INFO", f"Cleared logs for {selected_device}\n{result.strip()}")
+            wx.CallAfter(self.log_message, "WARNING", f"Cleared logs for {selected_device}")
         except subprocess.CalledProcessError as e:
             wx.CallAfter(self.log_message, "ERROR", f"Failed to clear logs for {selected_device}\n{e.output}")
 
@@ -666,17 +818,38 @@ class ADBManager(wx.Frame):
 
             start_time = datetime.now()  # Record start time
 
+            # 设定执行事件的百分比
+            # （1）pct-touch --触摸事件，点击时间百分比
+            # （2）pct-motion--动作事件，设定动作时间百分比
+            # （3）pct-trackball --轨迹球事件，设定轨迹球事件百分比
+            # （4）pct-nav--基本导航事件，设定基本导航事件百分比，输入设备上、下、左、右键
+            # （5）pct-majornav-主要导航事件，设定主要导航事件百分比，兼容中间建、返回键、菜单键
+            # （6）pct-syskeys--系统导航事件，设定系统导航事件百分比，HOME、BACK建、拨号键及音量键等
+            # （7）pct-appswitch--Activity事件，设定启动Activity事件百分比
+            # （8）pct-anyevent--不常用事件，设定不常用事件百分比
+            # ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "--throttle", "500",
+            #  "--ignore-crashes --ignore-timeouts --ignore-security-exceptions ",
+            #  "--ignore-timeouts", "-v", times_entry],
+
             monkey_process = subprocess.Popen(
-                ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "--throttle", "500",
-                 "--pct-syskeys", "0", "--ignore-crashes", "--ignore-timeouts", "-v", times_entry],
+                ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "-v", "-v", "-v", "-s", "1000000",
+                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions", "--kill-process-after-error",
+                 "--pct-appswitch", "0", "--pct-touch", "15", "--pct-syskeys", "5", "--pct-motion", "5",
+                 "--pct-trackball", "0",
+                 "--pct-majornav", "30", "--pct-nav", "40", "--pct-anyevent", "5", "--pct-flip", "0", "--pct-pinchzoom",
+                 "0",
+                 "--throttle", "500", times_entry],
                 stdout=open(log_file_path, "w"),
-                stderr=subprocess.STDOUT,
+                stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
             wx.CallAfter(self.log_message, "INFO",
                          f"Monkey test started on {selected_device}, logs saved to {log_file_path}")
 
-            monkey_process.communicate()
+            stdout, stderr = monkey_process.communicate()
+            if stderr:
+                wx.CallAfter(self.log_message, "ERROR", f"Monkey test encountered errors: {stderr.decode()}")
+
             end_time = datetime.now()  # Record end time
 
             run_time = end_time - start_time
@@ -685,7 +858,8 @@ class ADBManager(wx.Frame):
             wx.CallAfter(self.log_message, "WARNING",
                          f"Monkey test on {selected_device} completed successfully in {int(hours)}h {int(minutes)}m {int(seconds)}s")
 
-            logcat_process.kill()
+            logcat_process.terminate()
+            logcat_process.wait()
             wx.CallAfter(self.log_message, "INFO", f"System logs capture completed on {selected_device}")
 
             # Capture bugreport and convert to HTML
@@ -1052,17 +1226,30 @@ class ADBManager(wx.Frame):
 
     def on_input_text(self, event):
         selected_devices = self.listbox_devices.GetSelections()
-        input_text = self.text_entry.GetValue()
         if not selected_devices:
             self.log_message("WARNING", "No device selected")
             return
+        input_text = self.text_entry.GetValue()
         if not input_text:
             self.log_message("WARNING", "No input text provided")
             return
+        # 清除设备的输入框内容
+        # for device in selected_devices:
+        #     selected_device = self.listbox_devices.GetString(device)
+        #     self.clear_input_field(selected_device)
+
         for device in selected_devices:
             selected_device = self.listbox_devices.GetString(device)
             thread = threading.Thread(target=self.execute_input_text_command, args=(selected_device, input_text))
             thread.start()
+
+    def clear_input_field(self, device, num_deletes=30):
+        try:
+            for _ in range(num_deletes):
+                result = self.execute_adb_command(f"adb -s {device} shell input keyevent KEYCODE_DEL")
+            self.log_message("INFO", f"Cleared input field on device {device}")
+        except Exception as e:
+            self.log_message("ERROR", f"Failed to clear input field on device {device}: {str(e)}")
 
     def execute_input_text_command(self, selected_device, input_text):
         try:
@@ -1129,9 +1316,12 @@ class ADBManager(wx.Frame):
 
             # 如果命令执行成功，保存日志
             if result.returncode == 0:
-                with open(log_file, 'w', encoding='utf-8') as log_output:
-                    log_output.write(result.stdout)
-                self.log_message("INFO", f"Successfully saved log for {device_name} to {log_file}")
+                if result.stdout:
+                    with open(log_file, 'w', encoding='utf-8') as log_output:
+                        log_output.write(result.stdout)
+                    self.log_message("INFO", f"Successfully saved log for {device_name} to {log_file}")
+                else:
+                    self.log_message("WARNING", f"No log output for {device_name}")
             else:
                 # 如果命令执行失败，记录错误信息
                 self.log_message("WARNING", f"Failed to save log for {device_name}: {result.stderr}")
