@@ -13,6 +13,7 @@ import threading
 import time
 import zipfile
 from datetime import datetime
+from common.mail.tempEmailService import EmailService
 
 import pyperclip  # 导入用于复制文本到剪贴板的库
 import wx
@@ -52,6 +53,8 @@ class ADBManager(wx.Frame):
         self.log_queue = queue.Queue()
         self.init_ui()
         self.get_devices()
+        self.thread_running = False  # 标志变量，控制线程运行
+
 
     def init_ui(self):
         panel = wx.Panel(self)
@@ -116,14 +119,37 @@ class ADBManager(wx.Frame):
         self.text_entry = wx.TextCtrl(left_panel, style=wx.TE_PROCESS_ENTER)
         self.text_entry.Bind(wx.EVT_TEXT_ENTER, self.on_input_text)
         text_sizer.Add(self.text_entry, 1, wx.EXPAND | wx.ALL, 5)
-        #
-        # self.btn_input_text = wx.Button(left_panel, label="Input Text To Devices")
-        # self.btn_input_text.Bind(wx.EVT_BUTTON, self.on_input_text)
-        # text_sizer.Add(self.btn_input_text, 0, wx.ALL, 5)
 
         device_sizer.Add(text_sizer, 0, wx.EXPAND)
 
-        left_sizer.Add(device_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        # Actions Section within the combined section
+        email_sizer = wx.BoxSizer(wx.HORIZONTAL)  # First row of buttons and input fields
+
+        # 按钮
+        self.btn_get_random_email = wx.Button(left_panel, label="Get Email")
+        self.btn_get_random_email.Bind(wx.EVT_BUTTON, self.on_get_random_email)
+        email_sizer.Add(self.btn_get_random_email, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 1)  # 按钮固定宽度且居中
+
+        # 第一个输入框，提示文案为 "email"
+        email_label = wx.StaticText(left_panel)
+        email_sizer.Add(email_label, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 1)  # 标签对齐输入框
+        self.email_input = wx.TextCtrl(left_panel, style=wx.TE_PROCESS_ENTER)
+        self.email_input.SetHint("email")  # 设置提示文案
+        self.email_input.Bind(wx.EVT_TEXT_ENTER, self.on_input_text)  # 绑定 Enter 键事件
+        email_sizer.Add(self.email_input, 1, wx.ALL | wx.EXPAND, 1)
+
+        # 第二个输入框，提示文案为 "vercode"
+        vercode_label = wx.StaticText(left_panel)
+        email_sizer.Add(vercode_label, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 1)  # 标签对齐输入框
+        self.vercode_input = wx.TextCtrl(left_panel, style=wx.TE_PROCESS_ENTER)
+        self.vercode_input.SetHint("vercode")  # 设置提示文案
+        self.vercode_input.Bind(wx.EVT_TEXT_ENTER, self.on_input_text)  # 绑定 Enter 键事件
+        email_sizer.Add(self.vercode_input, 1, wx.ALL | wx.EXPAND, 1)
+
+        # 添加到主布局
+        device_sizer.Add(email_sizer, 0, wx.EXPAND | wx.ALL, 1)  # 调整整体间距
+
+        left_sizer.Add(device_sizer, 0, wx.EXPAND | wx.ALL, 1)
 
         # Select App and Actions Section
         app_action_box = wx.StaticBox(left_panel, label='Actions')
@@ -316,6 +342,57 @@ class ADBManager(wx.Frame):
         except Exception as e:
             self.log_message("ERROR", f"Unexpected error occurred: {e}")
             raise
+
+    def on_get_random_email(self, event):
+        """处理 Get Random Email 按钮点击事件"""
+        if self.thread_running:
+            self.log_message("WARNING", "Previous process is still running. Aborting...")
+            return
+
+        self.thread_running = True
+
+        def task():
+            try:
+                email_service = EmailService()
+                random_email_data = email_service.get_random_email()
+
+                if random_email_data and random_email_data.get("data", {}).get("account"):
+                    email_account = random_email_data["data"]["account"]
+                    self.log_message("INFO", f"Random Email Account Retrieved: {email_account}")
+
+                    wx.CallAfter(self.email_input.SetValue, email_account)
+
+                    # 循环调用 get_email_list
+                    for attempt in range(10):
+                        email_list_data = email_service.get_email_list()
+                        if email_list_data and email_list_data.get("data", {}).get("total") == 1:
+                            self.log_message("INFO", "Email list retrieved successfully.")
+                            # email_id = email_list_data["data"]["list"][0].get("id")
+                            email_id = email_list_data.get("data", {}).get("rows", [])
+                            if email_id:
+                                email_service.emailId= email_id[0].get("id")
+                                self.log_message("INFO", f"Found email with ID")
+                                break
+                        else:
+                            self.log_message("WARNING", f"No email found. Attempt {attempt + 1}/10. Retrying in 10 seconds...")
+                            time.sleep(10)
+                    else:
+                        self.log_message("ERROR", "Failed to retrieve email after 10 attempts.")
+                        return
+
+                    # 获取邮件详情并提取验证码
+                    verification_code = email_service.get_email_detail()
+                    if verification_code:
+                        wx.CallAfter(self.vercode_input.SetValue, verification_code)
+                        self.log_message("INFO", f"Verification Code Retrieved: {verification_code}")
+                    else:
+                        self.log_message("ERROR", "Failed to retrieve verification code.")
+                else:
+                    self.log_message("ERROR", "Failed to retrieve random email account.")
+            finally:
+                self.thread_running = False  # 任务结束，释放标志
+
+        threading.Thread(target=task, daemon=True).start()
 
     def on_get_installed_packages(self, event):
         # 获取选中的设备
@@ -1225,31 +1302,23 @@ class ADBManager(wx.Frame):
                          f"Failed to uninstall {selected_app} on {selected_device}\n{e.output}")
 
     def on_input_text(self, event):
+        # 获取触发事件的输入框对象
+        source = event.GetEventObject()
+        input_text = source.GetValue()
+
         selected_devices = self.listbox_devices.GetSelections()
         if not selected_devices:
             self.log_message("WARNING", "No device selected")
             return
-        input_text = self.text_entry.GetValue()
+
         if not input_text:
             self.log_message("WARNING", "No input text provided")
             return
-        # 清除设备的输入框内容
-        # for device in selected_devices:
-        #     selected_device = self.listbox_devices.GetString(device)
-        #     self.clear_input_field(selected_device)
 
         for device in selected_devices:
             selected_device = self.listbox_devices.GetString(device)
             thread = threading.Thread(target=self.execute_input_text_command, args=(selected_device, input_text))
             thread.start()
-
-    def clear_input_field(self, device, num_deletes=30):
-        try:
-            for _ in range(num_deletes):
-                result = self.execute_adb_command(f"adb -s {device} shell input keyevent KEYCODE_DEL")
-            self.log_message("INFO", f"Cleared input field on device {device}")
-        except Exception as e:
-            self.log_message("ERROR", f"Failed to clear input field on device {device}: {str(e)}")
 
     def execute_input_text_command(self, selected_device, input_text):
         try:
