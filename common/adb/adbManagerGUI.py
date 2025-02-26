@@ -908,6 +908,7 @@ class ADBManager(wx.Frame):
             #  "--ignore-crashes --ignore-timeouts --ignore-security-exceptions ",
             #  "--ignore-timeouts", "-v", times_entry],
 
+            # seed_value = int(time.time())  # 使用当前时间戳作为种子值替换"-s",  str(seed_value),
             monkey_process = subprocess.Popen(
                 ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "-v", "-v", "-v", "-s", "1000000",
                  "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions", "--kill-process-after-error",
@@ -915,7 +916,7 @@ class ADBManager(wx.Frame):
                  "--pct-trackball", "0",
                  "--pct-majornav", "30", "--pct-nav", "40", "--pct-anyevent", "5", "--pct-flip", "0", "--pct-pinchzoom",
                  "0",
-                 "--throttle", "500", times_entry],
+                 "--throttle", "1000", times_entry],
                 stdout=open(log_file_path, "w"),
                 stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NO_WINDOW
