@@ -705,14 +705,13 @@ class ADBManager(wx.Frame):
                 check=True,
                 creationflags=subprocess.CREATE_NO_WINDOW
             ).stdout.strip()
-            return output
+            return output.strip()
         except subprocess.CalledProcessError as e:
-            with self.lock:
-                self.log_message("ERROR", f"ADB Command Failed on {device_name}: {e.stderr}")
+            error_msg = e.stderr.strip() if e.stderr else "No error output"
+            self.log_message("ERROR", f"ADB Command Failed on {device_name}: {error_msg}")
             return None
         except UnicodeDecodeError:
-            with self.lock:
-                self.log_message("ERROR", f"ADB Command produced non-UTF-8 output on {device_name}.")
+            self.log_message("ERROR", f"ADB Command produced non-UTF-8 output on {device_name}.")
             return None
 
     def on_clear_logs(self, event):
@@ -925,11 +924,12 @@ class ADBManager(wx.Frame):
             wx.CallAfter(self.log_message, "INFO",
                          f"Monkey test started on {selected_device}, logs saved to {log_file_path}")
 
+            # 等待 Monkey 测试结束并获取结果
             stdout, stderr = monkey_process.communicate()
             if stderr:
                 wx.CallAfter(self.log_message, "ERROR", f"Monkey test encountered errors: {stderr.decode()}")
 
-            end_time = datetime.now()  # Record end time
+            end_time = datetime.now()  # 记录结束时间
 
             run_time = end_time - start_time
             hours, remainder = divmod(run_time.total_seconds(), 3600)
@@ -941,9 +941,6 @@ class ADBManager(wx.Frame):
             logcat_process.wait()
             wx.CallAfter(self.log_message, "INFO", f"System logs capture completed on {selected_device}")
 
-            # Capture bugreport and convert to HTML
-            # self.capture_bugreport(selected_device, bugreport_file_path)
-            # self.convert_bugreport_to_html(bugreport_file_path, bugreport_html_path)
         except subprocess.CalledProcessError as e:
             wx.CallAfter(self.log_message, "ERROR", f"Failed to start Monkey test on {selected_device}\n{e}")
 
