@@ -912,9 +912,9 @@ class ADBManager(wx.Frame):
             monkey_process = subprocess.Popen(
                 ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "-v", "-v", "-v", "-s", "1000000",
                  "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions", "--kill-process-after-error",
-                 "--pct-appswitch", "0", "--pct-touch", "15", "--pct-syskeys", "5", "--pct-motion", "5",
+                 "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1", "--pct-motion", "5",
                  "--pct-trackball", "0",
-                 "--pct-majornav", "30", "--pct-nav", "40", "--pct-anyevent", "5", "--pct-flip", "0", "--pct-pinchzoom",
+                 "--pct-majornav", "5", "--pct-nav", "67", "--pct-anyevent", "1", "--pct-flip", "0", "--pct-pinchzoom",
                  "0",
                  "--throttle", "1000", times_entry],
                 stdout=open(log_file_path, "w"),
