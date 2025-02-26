@@ -904,6 +904,7 @@ class ADBManager(wx.Frame):
             # （6）pct-syskeys--系统导航事件，设定系统导航事件百分比，HOME、BACK建、拨号键及音量键等
             # （7）pct-appswitch--Activity事件，设定启动Activity事件百分比
             # （8）pct-anyevent--不常用事件，设定不常用事件百分比
+            # "--kill-process-after-error",
             # ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "--throttle", "500",
             #  "--ignore-crashes --ignore-timeouts --ignore-security-exceptions ",
             #  "--ignore-timeouts", "-v", times_entry],
@@ -911,7 +912,7 @@ class ADBManager(wx.Frame):
             # seed_value = int(time.time())  # 使用当前时间戳作为种子值替换"-s",  str(seed_value),
             monkey_process = subprocess.Popen(
                 ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "-v", "-v", "-v", "-s", "1000000",
-                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions", "--kill-process-after-error",
+                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
                  "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1", "--pct-motion", "5",
                  "--pct-trackball", "0",
                  "--pct-majornav", "5", "--pct-nav", "67", "--pct-anyevent", "1", "--pct-flip", "0", "--pct-pinchzoom",
