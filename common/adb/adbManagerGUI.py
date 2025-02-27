@@ -879,11 +879,29 @@ class ADBManager(wx.Frame):
                 selected_device, selected_app, times_entry, log_file_path, sys_log_file_path))
             thread.start()
 
-    def execute_monkey_and_logcat(self, selected_device, selected_app, times_entry, log_file_path, sys_log_file_path):
+    # 设定执行事件的百分比
+    # （1）pct-touch --触摸事件，点击时间百分比
+    # （2）pct-motion--动作事件，设定动作时间百分比
+    # （3）pct-trackball --轨迹球事件，设定轨迹球事件百分比
+    # （4）pct-nav--基本导航事件，设定基本导航事件百分比，输入设备上、下、左、右键
+    # （5）pct-majornav-主要导航事件，设定主要导航事件百分比，兼容中间建、返回键、菜单键
+    # （6）pct-syskeys--系统导航事件，设定系统导航事件百分比，HOME、BACK建、拨号键及音量键等
+    # （7）pct-appswitch--Activity事件，设定启动Activity事件百分比
+    # （8）pct-anyevent--不常用事件，设定不常用事件百分比
+    # "--kill-process-after-error",
+    # ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "--throttle", "500",
+    #  "--ignore-crashes --ignore-timeouts --ignore-security-exceptions ",
+    #  "--ignore-timeouts", "-v", times_entry],
+
+    # seed_value = int(time.time())  # 使用当前时间戳作为种子值替换"-s",  str(seed_value),
+    # adb -s 10.0.0.111:5188 shell dumpsys package com.mm.droid.livetv.stb31002837
+    def execute_monkey_and_logcat(self, selected_device, selected_app, times_entry, log_file_path, sys_log_file_path,
+                                  check_interval=15, switch_cooldown=30):
         try:
-            # Clear logs before starting the monkey test
+            # 清除日志，为 Monkey 测试做准备
             self.execute_clear_logs(selected_device)
 
+            # 启动系统日志捕获进程
             logcat_process = subprocess.Popen(
                 ["adb", "-s", selected_device, "logcat", "-v", "time"],
                 stdout=open(sys_log_file_path, "w"),
@@ -892,45 +910,47 @@ class ADBManager(wx.Frame):
             )
             wx.CallAfter(self.log_message, "INFO", f"System logs saved to {sys_log_file_path}")
 
-            start_time = datetime.now()  # Record start time
+            start_time = datetime.now()  # 记录测试开始时间
 
-            # 设定执行事件的百分比
-            # （1）pct-touch --触摸事件，点击时间百分比
-            # （2）pct-motion--动作事件，设定动作时间百分比
-            # （3）pct-trackball --轨迹球事件，设定轨迹球事件百分比
-            # （4）pct-nav--基本导航事件，设定基本导航事件百分比，输入设备上、下、左、右键
-            # （5）pct-majornav-主要导航事件，设定主要导航事件百分比，兼容中间建、返回键、菜单键
-            # （6）pct-syskeys--系统导航事件，设定系统导航事件百分比，HOME、BACK建、拨号键及音量键等
-            # （7）pct-appswitch--Activity事件，设定启动Activity事件百分比
-            # （8）pct-anyevent--不常用事件，设定不常用事件百分比
-            # "--kill-process-after-error",
-            # ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "--throttle", "500",
-            #  "--ignore-crashes --ignore-timeouts --ignore-security-exceptions ",
-            #  "--ignore-timeouts", "-v", times_entry],
+            # 构造 Monkey 测试命令参数（移除了Activity相关依赖）
+            monkey_cmd = [
+                "adb", "-s", selected_device, "shell", "monkey",
+                "-p", selected_app, "-v", "-v", "-v",
+                "--throttle", "1000",
+                "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
+                "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1",
+                "--pct-motion", "5", "--pct-trackball", "0", "--pct-majornav", "5",
+                "--pct-nav", "67", "--pct-anyevent", "1", times_entry
+            ]
 
-            # seed_value = int(time.time())  # 使用当前时间戳作为种子值替换"-s",  str(seed_value),
             monkey_process = subprocess.Popen(
-                ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "-v", "-v", "-v", "-s", "1000000",
-                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
-                 "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1", "--pct-motion", "5",
-                 "--pct-trackball", "0",
-                 "--pct-majornav", "5", "--pct-nav", "67", "--pct-anyevent", "1", "--pct-flip", "0", "--pct-pinchzoom",
-                 "0",
-                 "--throttle", "1000", times_entry],
+                monkey_cmd,
                 stdout=open(log_file_path, "w"),
                 stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
-            wx.CallAfter(self.log_message, "INFO",
-                         f"Monkey test started on {selected_device}, logs saved to {log_file_path}")
+            wx.CallAfter(self.log_message, "INFO", f"Monkey test started on {selected_device}")
 
-            # 等待 Monkey 测试结束并获取结果
+            last_switch_time = 0  # 记录上一次执行切换操作的时间
+
+            # 在 Monkey 测试期间定时检测当前运行的App
+            while monkey_process.poll() is None:
+                current_app = self.get_current_running_app(selected_device)
+                # 如果当前前台应用不是目标应用，且距离上次切换超过设定的冷却时间，则进行切换
+                if current_app != selected_app:
+                    current_time = time.time()
+                    if current_time - last_switch_time >= switch_cooldown:
+                        self.log_message("INFO",
+                                         f"检测到目标应用 {selected_app} 不在前台（当前：{current_app}），执行切换操作...")
+                        self.force_switch_to_app(selected_device, selected_app)
+                        last_switch_time = current_time
+                time.sleep(check_interval)
+
             stdout, stderr = monkey_process.communicate()
             if stderr:
                 wx.CallAfter(self.log_message, "ERROR", f"Monkey test encountered errors: {stderr.decode()}")
 
             end_time = datetime.now()  # 记录结束时间
-
             run_time = end_time - start_time
             hours, remainder = divmod(run_time.total_seconds(), 3600)
             minutes, seconds = divmod(remainder, 60)
@@ -941,8 +961,62 @@ class ADBManager(wx.Frame):
             logcat_process.wait()
             wx.CallAfter(self.log_message, "INFO", f"System logs capture completed on {selected_device}")
 
-        except subprocess.CalledProcessError as e:
-            wx.CallAfter(self.log_message, "ERROR", f"Failed to start Monkey test on {selected_device}\n{e}")
+        except Exception as e:
+            wx.CallAfter(self.log_message, "ERROR", f"Monkey test failed: {str(e)}")
+
+    def switch_to_selected_app(self, selected_device, selected_app):
+        """ 统一使用 Monkey 命令切换/启动应用，并记录切换日志 """
+        try:
+            self.log_message("INFO", f"执行切换命令，将 {selected_device} 的前台应用切换为 {selected_app}...")
+            cmd = ["adb", "-s", selected_device, "shell", "monkey", "-p", selected_app, "1"]
+            subprocess.run(cmd, check=True, timeout=10, creationflags=subprocess.CREATE_NO_WINDOW)
+            wx.CallAfter(self.log_message, "INFO", "切换命令执行成功")
+        except subprocess.TimeoutExpired:
+            self.log_message("WARNING", "切换命令超时")
+        except Exception as e:
+            self.log_message("ERROR", f"切换失败: {str(e)}")
+
+    def get_current_running_app(self, device):
+        """ 通过 dumpsys 获取当前前台运行的应用包名 """
+        try:
+            result = subprocess.check_output(
+                ["adb", "-s", device, "shell", "dumpsys", "window", "|", "grep", "mCurrentFocus"],
+                stderr=subprocess.STDOUT, text=True, encoding='utf-8', errors='ignore',
+                creationflags=subprocess.CREATE_NO_WINDOW
+            )
+            # self.log_message("DEBUG", f"ADB Command Output: {result.strip()}")  # 记录原始命令输出
+            current_app = result.strip().split()[-1].split('/')[0]
+            # self.log_message("INFO", f"当前前台运行的应用包名: {current_app}")  # 添加日志记录
+            return current_app
+
+        except Exception as e:
+            self.log_message("ERROR", f"获取当前运行应用失败: {str(e)}")
+            return None
+
+
+    def force_switch_to_app(self, device, app):
+        """ 三重保障切换机制：
+            1. 优先使用 Monkey 命令切换
+            2. 如果不成功，发送 HOME 键，再尝试切换
+            3. 如果仍不成功，强制重启应用后再切换
+        """
+        # 1. 使用 Monkey 命令切换
+        self.switch_to_selected_app(device, app)
+        time.sleep(5)
+        # 检查切换后是否成功
+        if self.get_current_running_app(device) != app:
+            # 2. 如果不成功，发送 HOME 键，返回桌面
+            self.log_message("INFO", f"检测到 {app} 未在前台，尝试返回桌面再切换...")
+            subprocess.run(["adb", "-s", device, "shell", "input", "keyevent", "KEYCODE_HOME"],
+                           creationflags=subprocess.CREATE_NO_WINDOW)
+            self.switch_to_selected_app(device, app)
+            time.sleep(5)
+        # 3. 如果仍不成功，强制重启应用
+        if self.get_current_running_app(device) != app:
+            self.log_message("INFO", f"依然未能切换到 {app}，尝试强制重启应用...")
+            subprocess.run(["adb", "-s", device, "shell", "am", "force-stop", app],
+                           creationflags=subprocess.CREATE_NO_WINDOW)
+            self.switch_to_selected_app(device, app)
 
     def on_capture_bugreport(self, event):
         selected_devices = self.listbox_devices.GetSelections()
