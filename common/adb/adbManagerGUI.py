@@ -913,14 +913,30 @@ class ADBManager(wx.Frame):
             start_time = datetime.now()  # 记录测试开始时间
 
             # 构造 Monkey 测试命令参数（移除了Activity相关依赖）
+            # monkey_cmd = [
+            #     "adb", "-s", selected_device, "shell", "monkey",
+            #     "-p", selected_app, "-v", "-v", "-v",
+            #     "--throttle", "1000",
+            #     "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
+            #     "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1",
+            #     "--pct-motion", "5", "--pct-trackball", "0", "--pct-majornav", "5",
+            #     "--pct-nav", "67", "--pct-anyevent", "1", times_entry
+            # ]
             monkey_cmd = [
                 "adb", "-s", selected_device, "shell", "monkey",
                 "-p", selected_app, "-v", "-v", "-v",
-                "--throttle", "1000",
+                "--throttle", "500",
                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
-                "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1",
-                "--pct-motion", "5", "--pct-trackball", "0", "--pct-majornav", "5",
-                "--pct-nav", "67", "--pct-anyevent", "1", times_entry
+                "--pct-touch", "35",
+                "--pct-motion", "15",
+                "--pct-trackball", "0",
+                "--pct-nav", "25",
+                "--pct-majornav", "10",
+                "--pct-syskeys", "2",
+                "--pct-appswitch", "10",
+                "--pct-anyevent", "3",
+                "-s", "12345",
+                times_entry
             ]
 
             monkey_process = subprocess.Popen(
