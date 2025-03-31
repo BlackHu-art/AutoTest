@@ -240,6 +240,11 @@ class ADBManager(wx.Frame):
         self.times_entry = wx.TextCtrl(left_panel)
         mon_sizer.Add(self.times_entry, 1, wx.EXPAND | wx.ALL, 5)
 
+        # 新增设备类型选择框
+        self.device_type_combo = wx.ComboBox(left_panel, choices=['STB', 'Mobile'], style=wx.CB_READONLY)
+        self.device_type_combo.SetSelection(0)  # 设置默认选中第一个选项
+        mon_sizer.Add(self.device_type_combo, 0, wx.ALL | wx.EXPAND, 5)
+
         self.btn_run_monkey = wx.Button(left_panel, label="Run Monkey Test")
         self.btn_run_monkey.Bind(wx.EVT_BUTTON, self.on_run_monkey_test)
         mon_sizer.Add(self.btn_run_monkey, 0, wx.ALL, 5)
@@ -851,19 +856,19 @@ class ADBManager(wx.Frame):
         selected_devices = self.listbox_devices.GetSelections()
         selected_app = self.combo_apps.GetValue()
         times_entry = self.times_entry.GetValue()
+        device_type = self.device_type_combo.GetValue()
+
         if not selected_devices:
-            wx.CallAfter(self.log_message, "WARNING", "No device selected")
-            return
+            return wx.CallAfter(self.log_message, "WARNING", "No device selected")
         if not selected_app:
-            wx.CallAfter(self.log_message, "WARNING", "No app selected")
-            return
+            return wx.CallAfter(self.log_message, "WARNING", "No app selected")
         if not times_entry:
-            wx.CallAfter(self.log_message, "WARNING", "No times entry")
-            return
+            return wx.CallAfter(self.log_message, "WARNING", "No times entry")
+
         log_file_dir = wx.DirSelector("Select log file directory")
         if not log_file_dir:
-            wx.CallAfter(self.log_message, "WARNING", "No log file directory selected")
-            return
+            return wx.CallAfter(self.log_message, "WARNING", "No log file directory selected")
+
         for device in selected_devices:
             selected_device = self.listbox_devices.GetString(device)
             sanitized_device_name = sanitize_device_name(selected_device)
@@ -871,12 +876,10 @@ class ADBManager(wx.Frame):
             log_file_path = os.path.join(log_file_dir, f"{sanitized_device_name}_log.txt")
             sys_log_file_path = os.path.join(log_file_dir, f"{sanitized_device_name}_Syslog.txt")
 
-            # bugreport_file_path = os.path.join(log_file_dir, f"{sanitized_device_name}_bugreport")
-            # if not os.path.exists(bugreport_file_path):  # 判断不存在则创建bugreport文件夹
-            #     os.makedirs(bugreport_file_path)
-
-            thread = threading.Thread(target=self.execute_monkey_and_logcat, args=(
-                selected_device, selected_app, times_entry, log_file_path, sys_log_file_path))
+            thread = threading.Thread(
+                target=self.execute_monkey_test,
+                args=(selected_device, selected_app, times_entry, log_file_path, sys_log_file_path, device_type)
+            )
             thread.start()
 
     # 设定执行事件的百分比
@@ -895,13 +898,13 @@ class ADBManager(wx.Frame):
 
     # seed_value = int(time.time())  # 使用当前时间戳作为种子值替换"-s",  str(seed_value),
     # adb -s 10.0.0.111:5188 shell dumpsys package com.mm.droid.livetv.stb31002837
-    def execute_monkey_and_logcat(self, selected_device, selected_app, times_entry, log_file_path, sys_log_file_path,
-                                  check_interval=15, switch_cooldown=30):
+
+    def execute_monkey_test(self, selected_device, selected_app, times_entry, log_file_path, sys_log_file_path, device_type,
+                            check_interval=15, switch_cooldown=30):
+        """ 执行 Monkey 测试并记录日志 """
         try:
-            # 清除日志，为 Monkey 测试做准备
             self.execute_clear_logs(selected_device)
 
-            # 启动系统日志捕获进程
             logcat_process = subprocess.Popen(
                 ["adb", "-s", selected_device, "logcat", "-v", "time"],
                 stdout=open(sys_log_file_path, "w"),
@@ -910,31 +913,21 @@ class ADBManager(wx.Frame):
             )
             wx.CallAfter(self.log_message, "INFO", f"System logs saved to {sys_log_file_path}")
 
-            start_time = datetime.now()  # 记录测试开始时间
+            start_time = datetime.now()
 
-            # 构造 Monkey 测试命令参数（移除了Activity相关依赖）
-            # monkey_cmd = [
-            #     "adb", "-s", selected_device, "shell", "monkey",
-            #     "-p", selected_app, "-v", "-v", "-v",
-            #     "--throttle", "1000",
-            #     "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
-            #     "--pct-appswitch", "0", "--pct-touch", "21", "--pct-syskeys", "1",
-            #     "--pct-motion", "5", "--pct-trackball", "0", "--pct-majornav", "5",
-            #     "--pct-nav", "67", "--pct-anyevent", "1", times_entry
-            # ]
             monkey_cmd = [
                 "adb", "-s", selected_device, "shell", "monkey",
                 "-p", selected_app, "-v", "-v", "-v",
-                "--throttle", "500",
+                "--throttle", "500" if device_type == "Mobile" else "1000",
                 "--ignore-crashes", "--ignore-timeouts", "--ignore-security-exceptions",
-                "--pct-touch", "35",
-                "--pct-motion", "15",
+                "--pct-touch", "35" if device_type == "Mobile" else "21",
+                "--pct-motion", "15" if device_type == "Mobile" else "5",
                 "--pct-trackball", "0",
-                "--pct-nav", "25",
-                "--pct-majornav", "10",
-                "--pct-syskeys", "2",
-                "--pct-appswitch", "10",
-                "--pct-anyevent", "3",
+                "--pct-nav", "25" if device_type == "Mobile" else "67",
+                "--pct-majornav", "10" if device_type == "Mobile" else "5",
+                "--pct-syskeys", "2" if device_type == "Mobile" else "1",
+                "--pct-appswitch", "10" if device_type == "Mobile" else "0",
+                "--pct-anyevent", "3" if device_type == "Mobile" else "1",
                 "-s", "12345",
                 times_entry
             ]
@@ -947,31 +940,26 @@ class ADBManager(wx.Frame):
             )
             wx.CallAfter(self.log_message, "INFO", f"Monkey test started on {selected_device}")
 
-            last_switch_time = 0  # 记录上一次执行切换操作的时间
+            last_switch_time = 0
 
-            # 在 Monkey 测试期间定时检测当前运行的App
             while monkey_process.poll() is None:
                 current_app = self.get_current_running_app(selected_device)
-                # 如果当前前台应用不是目标应用，且距离上次切换超过设定的冷却时间，则进行切换
-                if current_app != selected_app:
-                    current_time = time.time()
-                    if current_time - last_switch_time >= switch_cooldown:
-                        self.log_message("INFO",
-                                         f"检测到目标应用 {selected_app} 不在前台（当前：{current_app}），执行切换操作...")
-                        self.force_switch_to_app(selected_device, selected_app)
-                        last_switch_time = current_time
+                if current_app != selected_app and time.time() - last_switch_time >= switch_cooldown:
+                    wx.CallAfter(self.log_message, "INFO",
+                                 f"Target app {selected_app} not in foreground (Current: {current_app}), switching...")
+                    self.force_switch_to_app(selected_device, selected_app)
+                    last_switch_time = time.time()
                 time.sleep(check_interval)
 
             stdout, stderr = monkey_process.communicate()
             if stderr:
                 wx.CallAfter(self.log_message, "ERROR", f"Monkey test encountered errors: {stderr.decode()}")
 
-            end_time = datetime.now()  # 记录结束时间
-            run_time = end_time - start_time
+            run_time = datetime.now() - start_time
             hours, remainder = divmod(run_time.total_seconds(), 3600)
             minutes, seconds = divmod(remainder, 60)
             wx.CallAfter(self.log_message, "WARNING",
-                         f"Monkey test on {selected_device} completed successfully in {int(hours)}h {int(minutes)}m {int(seconds)}s")
+                         f"Monkey test on {selected_device} completed in {int(hours)}h {int(minutes)}m {int(seconds)}s")
 
             logcat_process.terminate()
             logcat_process.wait()
